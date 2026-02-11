@@ -20,8 +20,6 @@ func NewHandler(r *repository.Repository) *Handler {
 	}
 }
 
-// GetDepartments — контроллер страницы списка отделов (услуг) с поиском
-// GET /
 func (h *Handler) GetDepartments(ctx *gin.Context) {
 	var departments []repository.Department
 	var err error
@@ -39,7 +37,6 @@ func (h *Handler) GetDepartments(ctx *gin.Context) {
 		}
 	}
 
-	// Получаем массив всех заявок
 	applications, err := h.Repository.GetApplications()
 	if err != nil {
 		logrus.Error(err)
@@ -52,8 +49,6 @@ func (h *Handler) GetDepartments(ctx *gin.Context) {
 	})
 }
 
-// GetDepartment — контроллер страницы подробной информации об отделе (услуге)
-// GET /department/:id
 func (h *Handler) GetDepartment(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 
@@ -67,7 +62,6 @@ func (h *Handler) GetDepartment(ctx *gin.Context) {
 		logrus.Error(err)
 	}
 
-	// Получаем информацию о начальнике из заявки
 	appDep, err := h.Repository.GetApplicationForDepartment(id)
 	hasManager := err == nil && appDep != nil
 
@@ -78,8 +72,6 @@ func (h *Handler) GetDepartment(ctx *gin.Context) {
 	})
 }
 
-// GetApplication — контроллер страницы заявки (административной структуры)
-// GET /application/:id
 func (h *Handler) GetApplication(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)

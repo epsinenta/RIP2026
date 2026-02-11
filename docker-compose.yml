@@ -15,5 +15,29 @@ services:
     command: server /data --console-address ":9001"
     restart: unless-stopped
 
+  # postgres:
+  #   image: postgres:latest
+  #   container_name: rip-postgres
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: mydb
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  # redis:
+  #   image: redis:latest
+  #   container_name: rip-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+
 volumes:
   minio-data:
+  # postgres-data:
+  # redis-data:

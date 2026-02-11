@@ -12,7 +12,6 @@ func NewRepository() (*Repository, error) {
 	return &Repository{}, nil
 }
 
-// Department — услуга (отдел компании)
 type Department struct {
 	ID               int
 	Title            string
@@ -25,7 +24,6 @@ type Department struct {
 	Description      string
 }
 
-// Application — словарь заявки (административная структура)
 type Application struct {
 	ID             int
 	Title          string
@@ -36,7 +34,6 @@ type Application struct {
 	TotalSalary    float64
 }
 
-// ApplicationDepartment — отдел в составе заявки (м-м связь)
 type ApplicationDepartment struct {
 	Department Department
 	Level      int
@@ -44,7 +41,6 @@ type ApplicationDepartment struct {
 	NewSalary  float64
 }
 
-// GetDepartments возвращает коллекцию всех отделов (услуг)
 func (r *Repository) GetDepartments() ([]Department, error) {
 	departments := []Department{
 		{
@@ -121,7 +117,6 @@ func (r *Repository) GetDepartments() ([]Department, error) {
 	return departments, nil
 }
 
-// GetDepartment возвращает отдел по ID
 func (r *Repository) GetDepartment(id int) (Department, error) {
 	departments, err := r.GetDepartments()
 	if err != nil {
@@ -136,7 +131,6 @@ func (r *Repository) GetDepartment(id int) (Department, error) {
 	return Department{}, fmt.Errorf("Отдел не найден")
 }
 
-// GetDepartmentByTitle — фильтрация отделов по наименованию (поиск)
 func (r *Repository) GetDepartmentByTitle(title string) ([]Department, error) {
 	departments, err := r.GetDepartments()
 	if err != nil {
@@ -152,10 +146,6 @@ func (r *Repository) GetDepartmentByTitle(title string) ([]Department, error) {
 	return result, nil
 }
 
-// CalculateNewSalary — расчёт новой зарплаты руководителя подразделения
-// Формула: Зарплата = БазовыйОклад + (Кол-воСотрудников * K)
-// БазовыйОклад: подчинённый отдел — 100000, руководящий — 150000, головное — 200000
-// K — коэффициент нагрузки — 5000
 func CalculateNewSalary(employeeCount int, role string) float64 {
 	K := 5000.0
 	var baseSalary float64
@@ -165,14 +155,13 @@ func CalculateNewSalary(employeeCount int, role string) float64 {
 		baseSalary = 200000
 	case "Руководящий отдел":
 		baseSalary = 150000
-	default: // Подчинённый отдел
+	default:
 		baseSalary = 100000
 	}
 
 	return baseSalary + float64(employeeCount)*K
 }
 
-// buildApplication собирает одну заявку по её данным
 func (r *Repository) buildApplication(id int, title string, description string, entries []struct {
 	DepartmentID int
 	Level        int
@@ -218,7 +207,6 @@ func (r *Repository) buildApplication(id int, title string, description string, 
 	}, nil
 }
 
-// GetApplications возвращает массив всех заявок (административных структур)
 func (r *Repository) GetApplications() ([]Application, error) {
 	entries1 := []struct {
 		DepartmentID int
@@ -246,7 +234,6 @@ func (r *Repository) GetApplications() ([]Application, error) {
 	return []Application{app1}, nil
 }
 
-// GetApplication возвращает заявку по ID
 func (r *Repository) GetApplication(id int) (Application, error) {
 	apps, err := r.GetApplications()
 	if err != nil {
@@ -261,7 +248,6 @@ func (r *Repository) GetApplication(id int) (Application, error) {
 	return Application{}, fmt.Errorf("Заявка не найдена")
 }
 
-// GetApplicationForDepartment — найти информацию о заявке для конкретного отдела
 func (r *Repository) GetApplicationForDepartment(departmentID int) (*ApplicationDepartment, error) {
 	apps, err := r.GetApplications()
 	if err != nil {

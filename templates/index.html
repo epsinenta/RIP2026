@@ -28,7 +28,7 @@
         {{ end }}
         <div class="container">
             {{ range .departments }}
-            <a href="/department/{{ .ID }}" class="card">
+            <a href="/department/{{ .ID }}" class="card" data-video="http://localhost:9000/test/{{ .Video }}">
                 <div class="card-accent-bar"></div>
                 <img src="http://localhost:9000/test/{{ .Photo }}" alt="img">
                 <h1>{{ .Title }}</h1>

@@ -29,11 +29,10 @@
             <thead>
                 <tr>
                     <th class="app-table__col-photo">Фото</th>
-                    <th class="app-table__col-title">Наименование отдела</th>
-                    <th class="app-table__col-count">Сотрудников</th>
-                    <th class="app-table__col-level">Уровень</th>
-                    <th class="app-table__col-salary">Новая зарплата</th>
-                    <th class="app-table__col-role">Роль в структуре</th>
+                    <th>Наименование отдела</th>
+                    <th>Сотрудников</th>
+                    <th>Зарплата руководителя</th>
+                    <th>Роль в структуре</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,11 +41,10 @@
                     <td class="app-table__col-photo">
                         <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
                     </td>
-                    <td class="app-table__col-title">{{ .Department.Title }}</td>
-                    <td class="app-table__col-count">{{ .Department.EmployeeCount }}</td>
-                    <td class="app-table__col-level">Уровень {{ .Level }}</td>
+                    <td>{{ .Department.Title }}</td>
+                    <td>{{ .Department.EmployeeCount }}</td>
                     <td class="app-table__col-salary">{{ printf "%.0f" .NewSalary }} ₽</td>
-                    <td class="app-table__col-role">
+                    <td>
                         <input type="text" value="{{ .Role }}" readonly class="role-input">
                     </td>
                 </tr>

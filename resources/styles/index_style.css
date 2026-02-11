@@ -1,13 +1,3 @@
-/* ============================================
-   Административная структура компании
-   Основная стилистика скопирована с 1С:Предприятие:
-   - Бордовый акцент #c55f4d (аналог фирменного цвета 1С)
-   - Жёлтый дополнительный акцент #ffde3c
-   - Светло-серый фон #f6f7f7
-   - Hover-эффекты на карточках и ссылках
-   - Форма карточек со скруглёнными углами и тенями
-   ============================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 * {
@@ -37,7 +27,6 @@ img {
     display: block;
 }
 
-/* === HEADER === */
 header {
     display: flex;
     align-items: center;
@@ -106,7 +95,6 @@ header form {
     background-color: #8a3f32;
 }
 
-/* === BACK LINK === */
 .back-link {
     display: inline-block;
     margin-bottom: 20px;
@@ -119,7 +107,6 @@ header form {
     color: #969ea2;
 }
 
-/* === HEADER CENTER (без поиска — только логотип по центру) === */
 .header-center {
     display: flex;
     align-items: center;
@@ -133,7 +120,6 @@ header form {
     box-sizing: border-box;
 }
 
-/* === MAIN CONTENT AREA === */
 .space {
     max-width: 1200px;
     margin-left: auto;
@@ -141,7 +127,6 @@ header form {
     padding: 30px 20px 60px;
 }
 
-/* === APPLICATION CARD (Заявка на странице списка — кликабельная) === */
 a.application-card {
     display: block;
     background-color: #ffffff;
@@ -200,7 +185,6 @@ a.application-card:hover {
     font-size: 0.9rem;
 }
 
-/* === RED ACCENT BAR (красная полоса сверху карточки) === */
 .card-accent-bar {
     width: 100%;
     height: 6px;
@@ -208,7 +192,6 @@ a.application-card:hover {
     flex-shrink: 0;
 }
 
-/* === DEPARTMENT GRID (Карточки отделов — кликабельные) === */
 .container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -275,14 +258,12 @@ a.card .card__description {
     overflow: hidden;
 }
 
-/* === DETAIL WRAPPER (центрированный контейнер для страницы отдела) === */
 .detail-wrapper {
     max-width: 800px;
     margin: 30px auto;
     padding: 0 20px;
 }
 
-/* === DETAIL CARD (карточка подробной информации об отделе) === */
 .detail-card {
     background-color: #ffffff;
     border-radius: 10px;
@@ -350,7 +331,6 @@ a.card .card__description {
     margin-bottom: 12px;
 }
 
-/* === MANAGER BLOCK (блок начальника на странице отдела) === */
 .manager-block {
     background-color: #f6f7f7;
     border: 1px solid #e0e0e0;
@@ -384,7 +364,6 @@ a.card .card__description {
     color: #2c353d;
 }
 
-/* === APPLICATION DETAIL (Страница заявки) === */
 .application-detail {
     max-width: 1200px;
     margin: 30px auto;
@@ -429,7 +408,6 @@ a.card .card__description {
     display: inline-block;
 }
 
-/* === APP TABLE (таблица отделов в заявке) === */
 .app-table {
     width: 100%;
     border-collapse: separate;
@@ -508,7 +486,6 @@ a.card .card__description {
     font-weight: 600;
 }
 
-/* === ROLE INPUT (поле роли в строке таблицы) === */
 .role-input {
     width: 100%;
     height: 28px;
@@ -520,7 +497,6 @@ a.card .card__description {
     background: transparent;
 }
 
-/* === RESPONSIVE === */
 @media (max-width: 992px) {
     .container {
         grid-template-columns: repeat(2, 1fr);
