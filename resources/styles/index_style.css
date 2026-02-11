@@ -1,0 +1,551 @@
+/* ============================================
+   Административная структура компании
+   Основная стилистика скопирована с 1С:Предприятие:
+   - Бордовый акцент #c55f4d (аналог фирменного цвета 1С)
+   - Жёлтый дополнительный акцент #ffde3c
+   - Светло-серый фон #f6f7f7
+   - Hover-эффекты на карточках и ссылках
+   - Форма карточек со скруглёнными углами и тенями
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    color: #2c353d;
+}
+
+body {
+    background: #f6f7f7;
+    overflow-x: hidden;
+}
+
+a {
+    color: #c55f4d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #969ea2;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* === HEADER === */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    background-color: #fafafa;
+    height: 64px;
+    width: 100%;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.header-logo img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+}
+
+header form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-input {
+    width: 500px;
+    max-width: 50vw;
+    height: 42px;
+    border-radius: 12px;
+    border: 2px solid #E8E8EC;
+    font-size: 16px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    border-color: #c55f4d;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(197, 95, 77, 0.15);
+}
+
+.search-btn {
+    background-color: #c55f4d;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.search-btn:hover {
+    background-color: #a94e3e;
+}
+
+.search-btn:active {
+    background-color: #8a3f32;
+}
+
+/* === BACK LINK === */
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: #c55f4d;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    color: #969ea2;
+}
+
+/* === HEADER CENTER (без поиска — только логотип по центру) === */
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fafafa;
+    height: 64px;
+    width: 100%;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+/* === MAIN CONTENT AREA === */
+.space {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 30px 20px 60px;
+}
+
+/* === APPLICATION CARD (Заявка на странице списка — кликабельная) === */
+a.application-card {
+    display: block;
+    background-color: #ffffff;
+    border: 2px solid #c55f4d;
+    border-radius: 10px;
+    padding: 20px 28px;
+    margin-bottom: 32px;
+    transition: box-shadow 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.application-card:hover {
+    box-shadow: 0 4px 16px rgba(197, 95, 77, 0.12);
+}
+
+.application-card__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2c353d;
+}
+
+.application-card__id {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #2c353d;
+}
+
+.application-card__link {
+    font-weight: 600;
+    color: #c55f4d;
+}
+
+.application-card__info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.application-card__info span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #555;
+}
+
+.application-card__badge {
+    background-color: #ffde3c;
+    color: #2c353d;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* === RED ACCENT BAR (красная полоса сверху карточки) === */
+.card-accent-bar {
+    width: 100%;
+    height: 6px;
+    background-color: #c55f4d;
+    flex-shrink: 0;
+}
+
+/* === DEPARTMENT GRID (Карточки отделов — кликабельные) === */
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+a.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 283px;
+    font-size: 14px;
+    border-radius: 8px;
+    background-color: white;
+    gap: 4px;
+    border: 1px solid #e0e0e0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    overflow: hidden;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.card:hover {
+    border-color: #c55f4d;
+    box-shadow: 0 6px 20px rgba(197, 95, 77, 0.12);
+    transform: translateY(-2px);
+    color: inherit;
+}
+
+a.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #e8eaeb;
+}
+
+a.card h1 {
+    font-size: 14px;
+    font-weight: 600;
+    align-self: flex-start;
+    margin: 8px 20px 0;
+    color: #2c353d;
+}
+
+a.card .card__employees {
+    font-size: 14px;
+    align-self: flex-start;
+    margin-left: 20px;
+    color: #c55f4d;
+    font-weight: 600;
+}
+
+a.card .card__description {
+    font-size: 12px;
+    align-self: flex-start;
+    margin: 4px 20px 12px;
+    color: #666;
+    font-weight: 400;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* === DETAIL WRAPPER (центрированный контейнер для страницы отдела) === */
+.detail-wrapper {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* === DETAIL CARD (карточка подробной информации об отделе) === */
+.detail-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.detail-card__image {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    background-color: #e8eaeb;
+}
+
+.detail-card__video {
+    width: 100%;
+    max-height: 420px;
+    background-color: #000;
+    display: block;
+}
+
+.detail-card__body {
+    padding: 28px 32px;
+}
+
+.detail-card__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c353d;
+    margin-bottom: 10px;
+}
+
+.detail-card__employees {
+    font-size: 1rem;
+    color: #c55f4d;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.detail-card__meta {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0;
+}
+
+.detail-card__description {
+    font-size: 0.93rem;
+    color: #444;
+    line-height: 1.6;
+    margin-top: 16px;
+    margin-bottom: 0;
+}
+
+.detail-card__separator {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+.detail-card__section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c353d;
+    margin-bottom: 12px;
+}
+
+/* === MANAGER BLOCK (блок начальника на странице отдела) === */
+.manager-block {
+    background-color: #f6f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+}
+
+.manager-block__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #2c353d;
+    margin-bottom: 4px;
+}
+
+.manager-block__role {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.manager-block__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 28px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.manager-block__meta strong {
+    color: #2c353d;
+}
+
+/* === APPLICATION DETAIL (Страница заявки) === */
+.application-detail {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.application-detail__header-card {
+    background-color: #ffffff;
+    border: 2px solid #c55f4d;
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin-bottom: 32px;
+}
+
+.application-detail__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c353d;
+    margin-bottom: 16px;
+}
+
+.application-detail__info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.application-detail__info-item strong {
+    color: #2c353d;
+}
+
+.application-detail__salary-result {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background-color: #ffde3c;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c353d;
+    display: inline-block;
+}
+
+/* === APP TABLE (таблица отделов в заявке) === */
+.app-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.app-table thead tr {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+}
+
+.app-table thead th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    padding: 10px 12px;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.app-table thead th:first-child {
+    border-left: 1px solid #e0e0e0;
+    border-radius: 8px 0 0 8px;
+}
+
+.app-table thead th:last-child {
+    border-right: 1px solid #e0e0e0;
+    border-radius: 0 8px 8px 0;
+}
+
+.app-table tbody tr {
+    background-color: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.app-table tbody tr:hover td {
+    border-color: #c55f4d;
+}
+
+.app-table tbody td {
+    padding: 12px;
+    font-size: 15px;
+    color: #555;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.app-table tbody td:first-child {
+    border-left: 1px solid #e0e0e0;
+    border-radius: 8px 0 0 8px;
+}
+
+.app-table tbody td:last-child {
+    border-right: 1px solid #e0e0e0;
+    border-radius: 0 8px 8px 0;
+}
+
+.app-table__col-photo {
+    width: 80px;
+}
+
+.app-table__col-photo img {
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+    background-color: #e8eaeb;
+}
+
+.app-table__col-salary {
+    color: #c55f4d !important;
+    font-weight: 600;
+}
+
+/* === ROLE INPUT (поле роли в строке таблицы) === */
+.role-input {
+    width: 100%;
+    height: 28px;
+    border: 2px solid #E8E8EC;
+    font-size: 14px;
+    border-radius: 12px;
+    text-align: center;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 992px) {
+    .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-wrapper {
+        padding: 0 10px;
+    }
+
+    .detail-card__body {
+        padding: 20px;
+    }
+
+    .order-card {
+        flex-direction: column;
+        height: auto;
+    }
+
+    header, .header-center {
+        padding: 0 16px;
+    }
+}
