@@ -99,12 +99,12 @@ header form {
     display: inline-block;
     margin-bottom: 20px;
     font-size: 0.95rem;
-    color: #c55f4d;
+    color: #c55f4d !important;
     font-weight: 500;
 }
 
 .back-link:hover {
-    color: #969ea2;
+    color: #969ea2 !important;
 }
 
 .header-center {
@@ -258,6 +258,133 @@ a.card .card__description {
     overflow: hidden;
 }
 
+.vibes-page {
+    min-height: 100vh;
+    background: #f6f7f7;
+}
+
+.vibes-viewport {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    min-height: calc(100vh - 64px);
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.vibes-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    background: #000;
+}
+
+.vibes-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 70%);
+    pointer-events: none;
+}
+
+.vibes-back,
+.vibes-back * {
+    color: #c55f4d !important;
+}
+
+.vibes-back {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border-radius: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    z-index: 10;
+    transition: opacity 0.2s;
+}
+
+.vibes-back:hover,
+.vibes-back:hover * {
+    opacity: 0.85;
+    color: #969ea2 !important;
+}
+
+.vibes-back__icon {
+    font-size: 16px;
+}
+
+.vibes-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 20px 32px;
+    z-index: 5;
+}
+
+.vibes-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.vibes-meta {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 8px;
+}
+
+.vibes-description {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.vibes-manager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 14px;
+    background: rgba(197, 95, 77, 0.25);
+    border-radius: 10px;
+    border: 1px solid rgba(197, 95, 77, 0.5);
+}
+
+.vibes-manager__label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vibes-manager__name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.vibes-manager__salary {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffde3c;
+}
+
 .detail-wrapper {
     max-width: 800px;
     margin: 30px auto;
@@ -408,6 +535,11 @@ a.card .card__description {
     display: inline-block;
 }
 
+.app-table-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
 .app-table {
     width: 100%;
     border-collapse: separate;
@@ -450,6 +582,27 @@ a.card .card__description {
     border-color: #c55f4d;
 }
 
+/* Отступ по иерархии — колонка «Наименование отдела» */
+.app-table tbody tr.hierarchy-level-1 td:nth-child(2) {
+    padding-left: 12px;
+    text-align: left;
+}
+
+.app-table tbody tr.hierarchy-level-2 td:nth-child(2) {
+    padding-left: 36px;
+    text-align: left;
+}
+
+.app-table tbody tr.hierarchy-level-3 td:nth-child(2) {
+    padding-left: 60px;
+    text-align: left;
+}
+
+.app-table tbody tr.hierarchy-level-4 td:nth-child(2) {
+    padding-left: 84px;
+    text-align: left;
+}
+
 .app-table tbody td {
     padding: 12px;
     font-size: 15px;
@@ -470,7 +623,9 @@ a.card .card__description {
 }
 
 .app-table__col-photo {
-    width: 80px;
+    width: 164px;
+    min-width: 164px;
+    box-sizing: border-box;
 }
 
 .app-table__col-photo img {
@@ -506,6 +661,14 @@ a.card .card__description {
 @media (max-width: 640px) {
     .container {
         grid-template-columns: 1fr;
+    }
+
+    .vibes-viewport {
+        max-width: 100%;
+    }
+
+    .vibes-content {
+        right: 56px;
     }
 
     .detail-wrapper {

@@ -3,42 +3,39 @@
         <title>{{ .department.Title }} — Подробная информация</title>
         <link rel="stylesheet" href="/static/styles/index_style.css">
     </head>
-    <header class="header-center">
-        <a href="/" class="header-logo">
-            <img src="/static/img/logo.png" alt="Логотип">
-        </a>
-    </header>
-    <div class="detail-wrapper">
-        <a href="/" class="back-link">← Вернуться к списку отделов</a>
-        <div class="detail-card">
-            <div class="card-accent-bar"></div>
-            <video class="detail-card__video" controls autoplay muted loop>
+    <body class="vibes-page">
+        <header class="header-center">
+            <a href="/" class="header-logo">
+                <img src="/static/img/logo.png" alt="Логотип">
+            </a>
+        </header>
+        <div class="vibes-viewport">
+            <video class="vibes-video" controls autoplay muted loop>
                 <source src="http://localhost:9000/test/{{ .department.Video }}" type="video/mp4">
             </video>
-            <div class="detail-card__body">
-                <h1 class="detail-card__title">{{ .department.Title }}</h1>
-                <p class="detail-card__employees">Сотрудников: {{ .department.EmployeeCount }}</p>
-                <p class="detail-card__meta"><strong>Подчиняется:</strong> {{ .department.ReportsTo }}</p>
-                <p class="detail-card__description">{{ .department.Description }}</p>
-                <hr class="detail-card__separator">
-                <h2 class="detail-card__section-title">Начальник подразделения</h2>
+            <div class="vibes-overlay"></div>
+            <a href="/" class="vibes-back">
+                <span class="vibes-back__icon">←</span>
+                <span>Назад</span>
+            </a>
+            <div class="vibes-content">
+                <h1 class="vibes-title">{{ .department.Title }}</h1>
+                <p class="vibes-meta">Сотрудников: {{ .department.EmployeeCount }} · Подчиняется: {{ .department.ReportsTo }}</p>
+                <p class="vibes-description">{{ .department.ShortDescription }}</p>
                 {{ if .hasManager }}
-                <div class="manager-block">
-                    <div class="manager-block__name">{{ .department.Head }}</div>
-                    <div class="manager-block__role">Руководитель отдела {{ .department.Title }}</div>
-                    <div class="manager-block__meta">
-                        <span><strong>Уровень в структуре:</strong> {{ .appDep.Level }}</span>
-                        <span><strong>Подчинённых сотрудников:</strong> {{ .department.EmployeeCount }}</span>
-                        <span><strong>Базовый оклад для расчёта:</strong> {{ printf "%.0f" .appDep.NewSalary }} ₽</span>
-                    </div>
+                <div class="vibes-manager">
+                    <span class="vibes-manager__label">Руководитель</span>
+                    <span class="vibes-manager__name">{{ .department.Head }}</span>
+                    <span class="vibes-manager__salary">{{ printf "%.0f" .appDep.Salary }} ₽</span>
                 </div>
                 {{ else }}
-                <div class="manager-block">
-                    <div class="manager-block__name">{{ .department.Head }}</div>
-                    <div class="manager-block__role">Руководитель отдела</div>
+                <div class="vibes-manager">
+                    <span class="vibes-manager__label">Руководитель</span>
+                    <span class="vibes-manager__name">{{ .department.Head }}</span>
                 </div>
                 {{ end }}
             </div>
         </div>
-    </div>
+    </body>
 </html>
+

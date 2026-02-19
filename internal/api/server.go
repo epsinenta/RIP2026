@@ -26,7 +26,7 @@ func StartServer() {
 
 	r.GET("/", handler.GetDepartments)
 	r.GET("/department/:id", handler.GetDepartment)
-	r.GET("/application/:id", handler.GetApplication)
+	r.GET("/department_application/:id", handler.GetDepartmentApplication)
 
 	r.Run()
 	log.Println("Server down")

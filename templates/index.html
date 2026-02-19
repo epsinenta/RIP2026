@@ -13,8 +13,8 @@
         </form>
     </header>
     <div class="space">
-        {{ range .applications }}
-        <a href="/application/{{ .ID }}" class="application-card">
+        {{ range .department_applications }}
+        <a href="/department_application/{{ .ID }}" class="application-card">
             <div class="application-card__title">{{ .Title }}</div>
             <div class="application-card__id">
                 Заявка: <span class="application-card__link">№ {{ .ID }}</span>

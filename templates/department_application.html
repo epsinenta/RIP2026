@@ -1,6 +1,6 @@
 <html lang="ru">
     <head>
-        <title>Заявка № {{ .app.ID }} — {{ .app.Title }}</title>
+        <title>Заявка № {{ .department_application.ID }} — {{ .department_application.Title }}</title>
         <link rel="stylesheet" href="/static/styles/index_style.css">
     </head>
     <header class="header-center">
@@ -11,20 +11,21 @@
     <div class="application-detail">
         <a href="/" class="back-link">← Вернуться к списку отделов</a>
         <div class="application-detail__header-card">
-            <h1 class="application-detail__title">Заявка № {{ .app.ID }} — {{ .app.Title }}</h1>
+            <h1 class="application-detail__title">Заявка № {{ .department_application.ID }} — {{ .department_application.Title }}</h1>
             <div class="application-detail__info">
-                <div class="application-detail__info-item"><strong>ID заявки:</strong> {{ .app.ID }}</div>
+                <div class="application-detail__info-item"><strong>ID заявки:</strong> {{ .department_application.ID }}</div>
                 <div class="application-detail__info-item">
-                    <strong>Описание:</strong> {{ .app.Description }}
+                    <strong>Описание:</strong> {{ .department_application.Description }}
                 </div>
-                <div class="application-detail__info-item"><strong>Количество отделов:</strong> {{ .app.AppCount }}</div>
-                <div class="application-detail__info-item"><strong>Общее количество сотрудников:</strong> {{ .app.TotalEmployees }}</div>
+                <div class="application-detail__info-item"><strong>Количество отделов:</strong> {{ .department_application.AppCount }}</div>
+                <div class="application-detail__info-item"><strong>Общее количество сотрудников:</strong> {{ .department_application.TotalEmployees }}</div>
             </div>
             <div class="application-detail__salary-result">
                 Итоговая зарплата руководителей: {{ .totalSalary }} ₽
             </div>
         </div>
 
+        <div class="app-table-wrapper">
         <table class="app-table">
             <thead>
                 <tr>
@@ -36,14 +37,14 @@
                 </tr>
             </thead>
             <tbody>
-                {{ range .app.Departments }}
-                <tr>
+                {{ range .department_application.Hierarchy }}
+                <tr class="hierarchy-level-{{ .Level }}">
                     <td class="app-table__col-photo">
                         <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
                     </td>
                     <td>{{ .Department.Title }}</td>
                     <td>{{ .Department.EmployeeCount }}</td>
-                    <td class="app-table__col-salary">{{ printf "%.0f" .NewSalary }} ₽</td>
+                    <td class="app-table__col-salary">{{ printf "%.0f" .Salary }} ₽</td>
                     <td>
                         <input type="text" value="{{ .Role }}" readonly class="role-input">
                     </td>
@@ -51,5 +52,6 @@
                 {{ end }}
             </tbody>
         </table>
+        </div>
     </div>
 </html>

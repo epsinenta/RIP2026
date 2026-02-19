@@ -37,15 +37,15 @@ func (h *Handler) GetDepartments(ctx *gin.Context) {
 		}
 	}
 
-	applications, err := h.Repository.GetApplications()
+	department_applications, err := h.Repository.GetDepartmentApplications()
 	if err != nil {
 		logrus.Error(err)
 	}
 
 	ctx.HTML(http.StatusOK, "index.html", gin.H{
-		"departments":  departments,
-		"query":        searchQuery,
-		"applications": applications,
+		"departments":             departments,
+		"query":                   searchQuery,
+		"department_applications": department_applications,
 	})
 }
 
@@ -62,7 +62,7 @@ func (h *Handler) GetDepartment(ctx *gin.Context) {
 		logrus.Error(err)
 	}
 
-	appDep, err := h.Repository.GetApplicationForDepartment(id)
+	appDep, err := h.Repository.GetDepartmentApplicationForDepartment(id)
 	hasManager := err == nil && appDep != nil
 
 	ctx.HTML(http.StatusOK, "department.html", gin.H{
@@ -72,20 +72,20 @@ func (h *Handler) GetDepartment(ctx *gin.Context) {
 	})
 }
 
-func (h *Handler) GetApplication(ctx *gin.Context) {
+func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	app, err := h.Repository.GetApplication(id)
+	department_application, err := h.Repository.GetDepartmentApplication(id)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	ctx.HTML(http.StatusOK, "application.html", gin.H{
-		"app":            app,
-		"totalSalary":    fmt.Sprintf("%.0f", app.TotalSalary),
+	ctx.HTML(http.StatusOK, "department_application.html", gin.H{
+		"department_application": department_application,
+		"totalSalary":            fmt.Sprintf("%.0f", department_application.TotalSalary),
 	})
 }

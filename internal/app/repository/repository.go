@@ -24,21 +24,21 @@ type Department struct {
 	Description      string
 }
 
-type Application struct {
+type DepartmentApplication struct {
 	ID             int
 	Title          string
 	Description    string
-	Departments    []ApplicationDepartment
 	AppCount       int
 	TotalEmployees int
 	TotalSalary    float64
+	Hierarchy      []DepartmentApplicationDepartment
 }
 
-type ApplicationDepartment struct {
+type DepartmentApplicationDepartment struct {
 	Department Department
 	Level      int
 	Role       string
-	NewSalary  float64
+	Salary     float64
 }
 
 func (r *Repository) GetDepartments() ([]Department, error) {
@@ -146,98 +146,41 @@ func (r *Repository) GetDepartmentByTitle(title string) ([]Department, error) {
 	return result, nil
 }
 
-func CalculateNewSalary(employeeCount int, role string) float64 {
-	K := 5000.0
-	var baseSalary float64
-
-	switch role {
-	case "Головное подразделение":
-		baseSalary = 200000
-	case "Руководящий отдел":
-		baseSalary = 150000
-	default:
-		baseSalary = 100000
-	}
-
-	return baseSalary + float64(employeeCount)*K
-}
-
-func (r *Repository) buildApplication(id int, title string, description string, entries []struct {
-	DepartmentID int
-	Level        int
-	Role         string
-}) (Application, error) {
+func (r *Repository) GetDepartmentApplications() ([]DepartmentApplication, error) {
 	departments, err := r.GetDepartments()
 	if err != nil {
-		return Application{}, err
+		return nil, err
 	}
-
 	depMap := make(map[int]Department)
 	for _, d := range departments {
 		depMap[d.ID] = d
 	}
 
-	var appDeps []ApplicationDepartment
-	totalEmployees := 0
-	totalSalary := 0.0
-	for _, e := range entries {
-		dep, ok := depMap[e.DepartmentID]
-		if !ok {
-			continue
-		}
-		salary := CalculateNewSalary(dep.EmployeeCount, e.Role)
-		appDeps = append(appDeps, ApplicationDepartment{
-			Department: dep,
-			Level:      e.Level,
-			Role:       e.Role,
-			NewSalary:  salary,
-		})
-		totalEmployees += dep.EmployeeCount
-		totalSalary += salary
+	departmentApplications := []DepartmentApplication{
+		{
+			ID:             1,
+			Title:          "Административная структура компании",
+			Description:    "Формирование иерархической структуры подчинения отделов компании с определением уровней управления и расчётом итоговой зарплаты руководителей подразделений на основе количества подчинённых сотрудников.",
+			AppCount:       6,
+			TotalEmployees: 116,
+			TotalSalary:    1380000,
+			Hierarchy: []DepartmentApplicationDepartment{
+				{Department: depMap[1], Level: 1, Role: "Головное подразделение", Salary: 410000},
+				{Department: depMap[2], Level: 1, Role: "Руководящий отдел", Salary: 240000},
+				{Department: depMap[3], Level: 2, Role: "Подчинённый отдел", Salary: 160000},
+				{Department: depMap[4], Level: 2, Role: "Подчинённый отдел", Salary: 145000},
+				{Department: depMap[5], Level: 3, Role: "Подчинённый отдел", Salary: 175000},
+				{Department: depMap[6], Level: 2, Role: "Руководящий отдел", Salary: 250000},
+			},
+		},
 	}
-
-	return Application{
-		ID:             id,
-		Title:          title,
-		Description:    description,
-		Departments:    appDeps,
-		AppCount:       len(appDeps),
-		TotalEmployees: totalEmployees,
-		TotalSalary:    totalSalary,
-	}, nil
+	return departmentApplications, nil
 }
 
-func (r *Repository) GetApplications() ([]Application, error) {
-	entries1 := []struct {
-		DepartmentID int
-		Level        int
-		Role         string
-	}{
-		{1, 1, "Головное подразделение"},
-		{2, 1, "Руководящий отдел"},
-		{3, 2, "Подчинённый отдел"},
-		{4, 2, "Подчинённый отдел"},
-		{5, 3, "Подчинённый отдел"},
-		{6, 2, "Руководящий отдел"},
-	}
-
-	app1, err := r.buildApplication(
-		1,
-		"Административная структура компании",
-		"Формирование иерархической структуры подчинения отделов компании с определением уровней управления и расчётом итоговой зарплаты руководителей подразделений на основе количества подчинённых сотрудников.",
-		entries1,
-	)
+func (r *Repository) GetDepartmentApplication(id int) (DepartmentApplication, error) {
+	apps, err := r.GetDepartmentApplications()
 	if err != nil {
-		return nil, err
-	}
-
-	return []Application{app1}, nil
-}
-
-func (r *Repository) GetApplication(id int) (Application, error) {
-	apps, err := r.GetApplications()
-	if err != nil {
-		return Application{}, err
+		return DepartmentApplication{}, err
 	}
 
 	for _, app := range apps {
@@ -245,17 +188,17 @@ func (r *Repository) GetApplication(id int) (Application, error) {
 			return app, nil
 		}
 	}
-	return Application{}, fmt.Errorf("Заявка не найдена")
+	return DepartmentApplication{}, fmt.Errorf("Заявка не найдена")
 }
 
-func (r *Repository) GetApplicationForDepartment(departmentID int) (*ApplicationDepartment, error) {
-	apps, err := r.GetApplications()
+func (r *Repository) GetDepartmentApplicationForDepartment(departmentID int) (*DepartmentApplicationDepartment, error) {
+	apps, err := r.GetDepartmentApplications()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, app := range apps {
-		for _, ad := range app.Departments {
+		for _, ad := range app.Hierarchy {
 			if ad.Department.ID == departmentID {
 				return &ad, nil
 			}
