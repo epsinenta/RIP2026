@@ -128,7 +128,9 @@ header form {
 }
 
 a.application-card {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 24px;
     background-color: #ffffff;
     border: 2px solid #c55f4d;
     border-radius: 10px;
@@ -141,6 +143,27 @@ a.application-card {
 
 a.application-card:hover {
     box-shadow: 0 4px 16px rgba(197, 95, 77, 0.12);
+}
+
+.application-card__icon {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(197, 95, 77, 0.12);
+    border-radius: 10px;
+}
+
+.application-card__icon img {
+    width: 36px;
+    height: 36px;
+}
+
+.application-card__body {
+    flex: 1;
+    min-width: 0;
 }
 
 .application-card__title {

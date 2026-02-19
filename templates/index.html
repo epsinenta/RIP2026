@@ -15,14 +15,19 @@
     <div class="space">
         {{ range .department_applications }}
         <a href="/department_application/{{ .ID }}" class="application-card">
-            <div class="application-card__title">{{ .Title }}</div>
-            <div class="application-card__id">
-                Заявка: <span class="application-card__link">№ {{ .ID }}</span>
+            <div class="application-card__icon">
+                <img src="/static/img/department.svg" alt="Структура департаментов">
             </div>
-            <div class="application-card__info">
-                <span>Отделов в структуре: <strong>{{ .AppCount }}</strong></span>
-                <span>Сотрудников: <strong>{{ .TotalEmployees }}</strong></span>
-                <span>Зарплата руководителей: <span class="application-card__badge">{{ printf "%.0f" .TotalSalary }} ₽</span></span>
+            <div class="application-card__body">
+                <div class="application-card__title">{{ .Title }}</div>
+                <div class="application-card__id">
+                    Заявка: <span class="application-card__link">№ {{ .ID }}</span>
+                </div>
+                <div class="application-card__info">
+                    <span>Отделов в структуре: <strong>{{ .AppCount }}</strong></span>
+                    <span>Сотрудников: <strong>{{ .TotalEmployees }}</strong></span>
+                    <span>Зарплата руководителей: <span class="application-card__badge">{{ printf "%.0f" .TotalSalary }} ₽</span></span>
+                </div>
             </div>
         </a>
         {{ end }}
