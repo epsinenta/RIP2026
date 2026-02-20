@@ -558,7 +558,6 @@ a.card .card__description {
     display: inline-block;
 }
 
-/* ===== Таблица отделов на всю ширину ===== */
 .app-table-wrapper {
     position: relative;
     width: 100vw;
@@ -579,6 +578,7 @@ a.card .card__description {
 .app-table tbody {
     display: block;
     width: 100%;
+    overflow: visible;
 }
 
 .app-table tr {
@@ -589,9 +589,10 @@ a.card .card__description {
     border-radius: 8px;
     margin-bottom: 10px;
     box-sizing: border-box;
+    position: relative;
+    overflow: visible;
 }
 
-/* Заголовок и строки привязаны к правому краю, ширина создаёт отступ слева */
 .app-table thead tr,
 .app-table tbody tr.hierarchy-level-1 {
     width: 100%;
@@ -613,11 +614,114 @@ a.card .card__description {
     margin-left: auto;
 }
 
+.app-table tbody tr.hierarchy-level-1 {
+    border-left: 4px solid #c55f4d;
+}
+
+.app-table tbody tr.hierarchy-level-2 {
+    border-left: 4px solid #c55f4d;
+}
+
+.app-table tbody tr.hierarchy-level-2::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 48px;
+    height: 2px;
+    background: #c55f4d;
+    transform: translateY(-50%);
+}
+
+.app-table tbody tr.hierarchy-level-2::after {
+    content: '';
+    position: absolute;
+    right: calc(100% + 48px);
+    top: 50%;
+    width: 2px;
+    height: 24px;
+    background: #c55f4d;
+    transform: translate(0, -50%);
+}
+
+.app-table tbody tr.hierarchy-level-3 {
+    border-left: 4px solid #c55f4d;
+}
+
+.app-table tbody tr.hierarchy-level-3::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 96px;
+    height: 2px;
+    background: #c55f4d;
+    transform: translateY(-50%);
+}
+
+.app-table tbody tr.hierarchy-level-3::after {
+    content: '';
+    position: absolute;
+    right: calc(100% + 96px);
+    top: 50%;
+    width: 2px;
+    height: 24px;
+    background: #c55f4d;
+    transform: translate(0, -50%);
+}
+
+.app-table tbody tr.hierarchy-level-4 {
+    border-left: 4px solid #c55f4d;
+}
+
+.app-table tbody tr.hierarchy-level-4::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 144px;
+    height: 2px;
+    background: #c55f4d;
+    transform: translateY(-50%);
+}
+
+.app-table tbody tr.hierarchy-level-4::after {
+    content: '';
+    position: absolute;
+    right: calc(100% + 144px);
+    top: 50%;
+    width: 2px;
+    height: 24px;
+    background: #c55f4d;
+    transform: translate(0, -50%);
+}
+
 .app-table th,
 .app-table td {
     display: block;
     padding: 12px;
     border: none;
+}
+
+.app-table thead th {
+    padding-left: 10px;
+}
+
+.app-table thead th.app-table__col-photo {
+    padding-left: 40px;
+    text-align: left;
+}
+
+.app-table thead th.app-table__col-name,
+.app-table thead th.app-table__col-salary {
+    padding-left: 8px;
+    text-align: left;
+}
+
+.app-table thead th.app-table__col-employees {
+    padding-left: 0;
+    margin-left: -80px;
+    text-align: left;
 }
 
 .app-table tbody tr:hover {
@@ -627,6 +731,7 @@ a.card .card__description {
 .app-table__col-photo {
     width: 164px;
     flex-shrink: 0;
+    text-align: left;
 }
 
 .app-table__col-photo img {
