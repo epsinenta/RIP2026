@@ -1,0 +1,46 @@
+<html lang="ru">
+    <head>
+        <title>Административная структура компании — Отделы</title>
+        <link rel="stylesheet" href="/static/styles/index_style.css">
+    </head>
+    <header>
+        <a href="/" class="header-logo">
+            <img src="/static/img/logo.png" alt="Логотип">
+        </a>
+        <form action="/" method="GET">
+            <input type="text" name="query" class="search-input" placeholder="Поиск по отделам" value="{{ .query }}">
+            <button type="submit" class="search-btn">Найти</button>
+        </form>
+    </header>
+    <div class="space">
+        {{ range .department_applications }}
+        <a href="/department_application/{{ .ID }}" class="application-card">
+            <div class="application-card__icon">
+                <img src="http://localhost:9000/test/department.svg" alt="Структура департаментов">
+            </div>
+            <div class="application-card__body">
+                <div class="application-card__title">{{ .Title }}</div>
+                <div class="application-card__id">
+                    Заявка: <span class="application-card__link">№ {{ .ID }}</span>
+                </div>
+                <div class="application-card__info">
+                    <span>Отделов в структуре: <strong>{{ .AppCount }}</strong></span>
+                    <span>Сотрудников: <strong>{{ .TotalEmployees }}</strong></span>
+                    <span>Зарплата руководителей: <span class="application-card__badge">{{ printf "%.0f" .TotalSalary }} ₽</span></span>
+                </div>
+            </div>
+        </a>
+        {{ end }}
+        <div class="container">
+            {{ range .departments }}
+            <a href="/department/{{ .ID }}" class="card" data-video="http://localhost:9000/test/{{ .Video }}">
+                <div class="card-accent-bar"></div>
+                <img src="http://localhost:9000/test/{{ .Photo }}" alt="img">
+                <h1>{{ .Title }}</h1>
+                <p class="card__employees">Сотрудников: {{ .EmployeeCount }}</p>
+                <p class="card__description">{{ .ShortDescription }}</p>
+            </a>
+            {{ end }}
+        </div>
+    </div>
+</html>

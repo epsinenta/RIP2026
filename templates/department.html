@@ -1,0 +1,41 @@
+<html lang="ru">
+    <head>
+        <title>{{ .department.Title }} — Подробная информация</title>
+        <link rel="stylesheet" href="/static/styles/index_style.css">
+    </head>
+    <body class="vibes-page">
+        <header class="header-center">
+            <a href="/" class="header-logo">
+                <img src="/static/img/logo.png" alt="Логотип">
+            </a>
+        </header>
+        <div class="vibes-viewport">
+            <video class="vibes-video" controls autoplay muted loop>
+                <source src="http://localhost:9000/test/{{ .department.Video }}" type="video/mp4">
+            </video>
+            <div class="vibes-overlay"></div>
+            <a href="/" class="vibes-back">
+                <span class="vibes-back__icon">←</span>
+                <span>Назад</span>
+            </a>
+            <div class="vibes-content">
+                <h1 class="vibes-title">{{ .department.Title }}</h1>
+                <p class="vibes-meta">Сотрудников: {{ .department.EmployeeCount }} · Подчиняется: {{ .department.ReportsTo }}</p>
+                <p class="vibes-description">{{ .department.ShortDescription }}</p>
+                {{ if .hasManager }}
+                <div class="vibes-manager">
+                    <span class="vibes-manager__label">Руководитель</span>
+                    <span class="vibes-manager__name">{{ .department.Head }}</span>
+                    <span class="vibes-manager__salary">{{ printf "%.0f" .appDep.Salary }} ₽</span>
+                </div>
+                {{ else }}
+                <div class="vibes-manager">
+                    <span class="vibes-manager__label">Руководитель</span>
+                    <span class="vibes-manager__name">{{ .department.Head }}</span>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+    </body>
+</html>
+
