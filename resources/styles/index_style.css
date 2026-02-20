@@ -220,6 +220,38 @@ a.application-card:hover {
     gap: 20px;
 }
 
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-add-form {
+    margin: 0;
+}
+
+.card-add-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: #c55f4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.card-add-btn:hover {
+    background-color: #a94e3e;
+}
+
+.application-card--inactive {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
 a.card {
     display: flex;
     flex-direction: column;

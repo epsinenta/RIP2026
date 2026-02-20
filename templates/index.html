@@ -13,33 +13,44 @@
         </form>
     </header>
     <div class="space">
-        {{ range .department_applications }}
-        <a href="/department_application/{{ .ID }}" class="application-card">
+        {{ if ne .department_application_count 0 }}
+        <a href="/department_application/{{ .department_application_id }}" class="application-card">
             <div class="application-card__icon">
                 <img src="http://localhost:9000/test/department.svg" alt="Структура департаментов">
             </div>
             <div class="application-card__body">
-                <div class="application-card__title">{{ .Title }}</div>
+                <div class="application-card__title">Заявка на объединение департаментов</div>
                 <div class="application-card__id">
-                    Заявка: <span class="application-card__link">№ {{ .ID }}</span>
-                </div>
-                <div class="application-card__info">
-                    <span>Отделов в структуре: <strong>{{ .AppCount }}</strong></span>
-                    <span>Сотрудников: <strong>{{ .TotalEmployees }}</strong></span>
-                    <span>Зарплата руководителей: <span class="application-card__badge">{{ printf "%.0f" .TotalSalary }} ₽</span></span>
+                    Отделов в заявке: <span class="application-card__link">{{ .department_application_count }}</span>
                 </div>
             </div>
         </a>
+        {{ else }}
+        <div class="application-card application-card--inactive" style="cursor: default;">
+            <div class="application-card__icon">
+                <img src="http://localhost:9000/test/department.svg" alt="Структура департаментов">
+            </div>
+            <div class="application-card__body">
+                <div class="application-card__title">Заявка на объединение департаментов</div>
+                <div class="application-card__id">Нет отделов в заявке</div>
+            </div>
+        </div>
         {{ end }}
         <div class="container">
             {{ range .departments }}
-            <a href="/department/{{ .ID }}" class="card" data-video="http://localhost:9000/test/{{ .Video }}">
-                <div class="card-accent-bar"></div>
-                <img src="http://localhost:9000/test/{{ .Photo }}" alt="img">
-                <h1>{{ .Title }}</h1>
-                <p class="card__employees">Сотрудников: {{ .EmployeeCount }}</p>
-                <p class="card__description">{{ .ShortDescription }}</p>
-            </a>
+            <div class="card-wrapper">
+                <a href="/department/{{ .DepartmentID }}" class="card" data-video="http://localhost:9000/test/{{ .Video }}">
+                    <div class="card-accent-bar"></div>
+                    <img src="http://localhost:9000/test/{{ .Photo }}" alt="img">
+                    <h1>{{ .Title }}</h1>
+                    <p class="card__employees">Сотрудников: {{ .EmployeeCount }}</p>
+                    <p class="card__description">{{ .ShortDescription }}</p>
+                </a>
+                <form method="POST" action="/department_application/add" class="card-add-form">
+                    <input type="hidden" name="department_id" value="{{ .DepartmentID }}">
+                    <button type="submit" class="card-add-btn">Добавить в заявку</button>
+                </form>
+            </div>
             {{ end }}
         </div>
     </div>

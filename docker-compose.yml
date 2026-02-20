@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   minio:
     image: minio/minio:latest
@@ -26,6 +24,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./InitDatabase:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
   redis:
@@ -36,6 +35,13 @@ services:
     volumes:
       - redis-data:/data
     restart: unless-stopped
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
 
 volumes:
   minio-data:

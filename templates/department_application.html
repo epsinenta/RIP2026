@@ -1,7 +1,7 @@
 <html lang="ru">
     <head>
-        <title>Заявка № {{ .department_application.ID }} — {{ .department_application.Title }}</title>
-        <link rel="stylesheet" href="/static/styles/index_style.css?v=2">
+        <title>Заявка на объединение департаментов</title>
+        <link rel="stylesheet" href="/static/styles/index_style.css">
     </head>
     <header class="header-center">
         <a href="/" class="header-logo">
@@ -11,17 +11,13 @@
     <div class="application-detail">
         <a href="/" class="back-link">← Вернуться к списку отделов</a>
         <div class="application-detail__header-card">
-            <h1 class="application-detail__title">Заявка № {{ .department_application.ID }} — {{ .department_application.Title }}</h1>
+            <h1 class="application-detail__title">Заявка на объединение департаментов</h1>
             <div class="application-detail__info">
-                <div class="application-detail__info-item"><strong>ID заявки:</strong> {{ .department_application.ID }}</div>
-                <div class="application-detail__info-item">
-                    <strong>Описание:</strong> {{ .department_application.Description }}
-                </div>
-                <div class="application-detail__info-item"><strong>Количество отделов:</strong> {{ .department_application.AppCount }}</div>
-                <div class="application-detail__info-item"><strong>Общее количество сотрудников:</strong> {{ .department_application.TotalEmployees }}</div>
+                <div class="application-detail__info-item"><strong>ID заявки:</strong> {{ .department_application_id }}</div>
+                <div class="application-detail__info-item"><strong>Количество отделов:</strong> {{ len .department_application }}</div>
             </div>
             <div class="application-detail__salary-result">
-                Итоговая зарплата руководителей: {{ .totalSalary }} ₽
+                Итоговая зарплата руководителей: {{ printf "%.0f" .totalSalary }} ₽
             </div>
         </div>
 
@@ -37,7 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                {{ range .department_application.Hierarchy }}
+                {{ range .department_application }}
                 <tr class="hierarchy-level-{{ .Level }}">
                     <td class="app-table__col-photo">
                         <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
@@ -53,5 +49,10 @@
             </tbody>
         </table>
         </div>
+
+        <form method="POST" action="/department_application/delete" style="margin-top: 24px;">
+            <input type="hidden" name="department_application_id" value="{{ .department_application_id }}">
+            <button type="submit" class="search-btn" style="background-color: #c55f4d;">Удалить заявку</button>
+        </form>
     </div>
 </html>
