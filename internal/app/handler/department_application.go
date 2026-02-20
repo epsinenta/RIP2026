@@ -81,3 +81,31 @@ func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {
 
 	ctx.Redirect(http.StatusSeeOther, "/")
 }
+
+func (h *Handler) UpdateRole(ctx *gin.Context) {
+	appIDStr := ctx.PostForm("department_application_id")
+	appID, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	departmentIDStr := ctx.PostForm("department_id")
+	departmentID, err := strconv.Atoi(departmentIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	role := ctx.PostForm("role")
+	if role == "" {
+		h.errorHandler(ctx, http.StatusBadRequest, nil)
+		return
+	}
+
+	err = h.Repository.UpdateRole(uint(appID), uint(departmentID), role)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/department_application/"+appIDStr)
+}

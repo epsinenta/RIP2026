@@ -87,44 +87,16 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			return err
 		}
 
-		var existingCount int64
-		r.db.Model(&ds.DepartmentApplicationDepartment{}).
-			Where("department_application_id = ?", app.DepartmentApplicationID).
-			Count(&existingCount)
-
 		const k = 5000
-		var baseSalary float64
-		var level int
-		var role string
-		var isMain bool
-
-		switch existingCount {
-		case 0:
-			baseSalary = 200000
-			level = 1
-			role = "Головное подразделение"
-			isMain = true
-		case 1:
-			baseSalary = 150000
-			level = 2
-			role = "Руководящий отдел"
-			isMain = false
-		default:
-			baseSalary = 100000
-			level = int(existingCount) + 1
-			role = "Подчинённый отдел"
-			isMain = false
-		}
-
+		baseSalary := roleToBaseSalary("Головной")
 		salary := baseSalary + float64(dep.EmployeeCount)*k
 
 		item := ds.DepartmentApplicationDepartment{
 			DepartmentApplicationID: app.DepartmentApplicationID,
 			DepartmentID:            departmentID,
 			Amount:                 1,
-			Level:                  level,
-			IsMain:                 isMain,
-			Role:                   role,
+			IsMain:                 true,
+			Role:                   "Головной",
 			Salary:                 salary,
 		}
 		if err := r.db.Create(&item).Error; err != nil {
@@ -163,6 +135,30 @@ func (r *Repository) CalculateAndSetTotalSalary(appID uint) error {
 	return r.db.Model(&ds.DepartmentApplication{}).
 		Where("department_application_id = ?", appID).
 		Update("total_salary", total).Error
+}
+
+func roleToBaseSalary(role string) float64 {
+	switch role {
+	case "Головной":
+		return 200000
+	case "Руководящий":
+		return 150000
+	default:
+		return 100000
+	}
+}
+
+func (r *Repository) UpdateRole(appID, departmentID uint, role string) error {
+	var dep ds.Department
+	if err := r.db.First(&dep, departmentID).Error; err != nil {
+		return err
+	}
+	baseSalary := roleToBaseSalary(role)
+	const k = 5000
+	salary := baseSalary + float64(dep.EmployeeCount)*k
+	return r.db.Model(&ds.DepartmentApplicationDepartment{}).
+		Where("department_application_id = ? AND department_id = ?", appID, departmentID).
+		Updates(map[string]interface{}{"role": role, "salary": salary}).Error
 }
 
 func (r *Repository) IsDraftDepartmentApplication(appID int, creatorID uint) (bool, error) {

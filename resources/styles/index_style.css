@@ -792,15 +792,41 @@ a.card .card__description {
     flex: 1;
 }
 
-.role-input {
+.role-form {
+    margin: 0;
+}
+
+.role-form select {
     width: 100%;
-    height: 28px;
-    border: 2px solid #E8E8EC;
+    min-width: 180px;
+    height: 36px;
+    padding: 6px 32px 6px 14px;
+    border: 2px solid #e6c935;
     font-size: 14px;
-    border-radius: 12px;
-    text-align: center;
+    font-weight: 500;
+    border-radius: 10px;
     box-sizing: border-box;
-    background: transparent;
+    background-color: #ffde3c;
+    color: #2c353d;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c353d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-form select:hover {
+    background-color: #f5d633;
+    border-color: #d4b82a;
+}
+
+.role-form select:focus {
+    outline: none;
+    border-color: #d4b82a;
+    box-shadow: 0 0 0 3px rgba(255, 222, 60, 0.4);
 }
 
 @media (max-width: 992px) {

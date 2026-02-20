@@ -34,7 +34,7 @@
             </thead>
             <tbody>
                 {{ range .department_application }}
-                <tr class="hierarchy-level-{{ .Level }}">
+                <tr class="{{ if or (eq .Role "Головной") (eq .Role "Головное подразделение") }}hierarchy-level-1{{ else if or (eq .Role "Руководящий") (eq .Role "Руководящий отдел") }}hierarchy-level-2{{ else }}hierarchy-level-3{{ end }}">
                     <td class="app-table__col-photo">
                         <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
                     </td>
@@ -42,7 +42,15 @@
                     <td class="app-table__col-employees">{{ .Department.EmployeeCount }}</td>
                     <td class="app-table__col-salary">{{ printf "%.0f" .Salary }} ₽</td>
                     <td class="app-table__col-role">
-                        <input type="text" value="{{ .Role }}" readonly class="role-input">
+                        <form method="POST" action="/department_application/update_role" class="role-form">
+                            <input type="hidden" name="department_application_id" value="{{ $.department_application_id }}">
+                            <input type="hidden" name="department_id" value="{{ .DepartmentID }}">
+                            <select name="role" onchange="this.form.submit()">
+                                <option value="Головной" {{ if eq .Role "Головной" }}selected{{ end }}>Головной</option>
+                                <option value="Руководящий" {{ if eq .Role "Руководящий" }}selected{{ end }}>Руководящий</option>
+                                <option value="Подчинённый" {{ if eq .Role "Подчинённый" }}selected{{ end }}>Подчинённый</option>
+                            </select>
+                        </form>
                     </td>
                 </tr>
                 {{ end }}
