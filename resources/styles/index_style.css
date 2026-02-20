@@ -9,7 +9,6 @@
 
 body {
     background: #f6f7f7;
-    overflow-x: hidden;
 }
 
 a {
@@ -518,6 +517,7 @@ a.card .card__description {
     max-width: 1200px;
     margin: 30px auto;
     padding: 0 20px;
+    overflow-x: visible;
 }
 
 .application-detail__header-card {
@@ -558,97 +558,75 @@ a.card .card__description {
     display: inline-block;
 }
 
+/* ===== Таблица отделов на всю ширину ===== */
 .app-table-wrapper {
-    max-width: 900px;
-    margin: 0 auto;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    padding: 0 40px;
+    box-sizing: border-box;
 }
 
 .app-table {
+    display: block;
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
 }
 
-.app-table thead tr {
+.app-table thead,
+.app-table tbody {
+    display: block;
+    width: 100%;
+}
+
+.app-table tr {
+    display: flex;
+    align-items: center;
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
-.app-table thead th {
-    text-align: left;
-    font-weight: 600;
-    font-size: 13px;
-    color: #555;
-    padding: 10px 12px;
-    background-color: #ffffff;
-    border-top: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
-    white-space: nowrap;
+/* Заголовок и строки привязаны к правому краю, ширина создаёт отступ слева */
+.app-table thead tr,
+.app-table tbody tr.hierarchy-level-1 {
+    width: 100%;
+    margin-left: 0;
 }
 
-.app-table thead th:first-child {
-    border-left: 1px solid #e0e0e0;
-    border-radius: 8px 0 0 8px;
+.app-table tbody tr.hierarchy-level-2 {
+    width: calc(100% - 48px);
+    margin-left: auto;
 }
 
-.app-table thead th:last-child {
-    border-right: 1px solid #e0e0e0;
-    border-radius: 0 8px 8px 0;
+.app-table tbody tr.hierarchy-level-3 {
+    width: calc(100% - 96px);
+    margin-left: auto;
 }
 
-.app-table tbody tr {
-    background-color: #ffffff;
-    transition: border-color 0.2s ease;
+.app-table tbody tr.hierarchy-level-4 {
+    width: calc(100% - 144px);
+    margin-left: auto;
 }
 
-.app-table tbody tr:hover td {
-    border-color: #c55f4d;
-}
-
-/* Отступ по иерархии — колонка «Наименование отдела» */
-.app-table tbody tr.hierarchy-level-1 td:nth-child(2) {
-    padding-left: 12px;
-    text-align: left;
-}
-
-.app-table tbody tr.hierarchy-level-2 td:nth-child(2) {
-    padding-left: 36px;
-    text-align: left;
-}
-
-.app-table tbody tr.hierarchy-level-3 td:nth-child(2) {
-    padding-left: 60px;
-    text-align: left;
-}
-
-.app-table tbody tr.hierarchy-level-4 td:nth-child(2) {
-    padding-left: 84px;
-    text-align: left;
-}
-
-.app-table tbody td {
+.app-table th,
+.app-table td {
+    display: block;
     padding: 12px;
-    font-size: 15px;
-    color: #555;
-    border-top: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
-    vertical-align: middle;
+    border: none;
 }
 
-.app-table tbody td:first-child {
-    border-left: 1px solid #e0e0e0;
-    border-radius: 8px 0 0 8px;
-}
-
-.app-table tbody td:last-child {
-    border-right: 1px solid #e0e0e0;
-    border-radius: 0 8px 8px 0;
+.app-table tbody tr:hover {
+    border-color: #c55f4d;
 }
 
 .app-table__col-photo {
     width: 164px;
-    min-width: 164px;
-    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .app-table__col-photo img {
@@ -659,9 +637,22 @@ a.card .card__description {
     background-color: #e8eaeb;
 }
 
+.app-table__col-name {
+    flex: 3;
+}
+
+.app-table__col-employees {
+    flex: 1;
+}
+
 .app-table__col-salary {
+    flex: 1;
     color: #c55f4d !important;
     font-weight: 600;
+}
+
+.app-table__col-role {
+    flex: 1;
 }
 
 .role-input {
@@ -710,4 +701,39 @@ a.card .card__description {
     header, .header-center {
         padding: 0 16px;
     }
+
+    .app-table tbody tr.hierarchy-level-2 {
+        width: calc(100% - 24px);
+        margin-left: auto;
+    }
+    .app-table tbody tr.hierarchy-level-3 {
+        width: calc(100% - 48px);
+        margin-left: auto;
+    }
+    .app-table tbody tr.hierarchy-level-4 {
+        width: calc(100% - 72px);
+        margin-left: auto;
+    }
+    .app-table__col-name {
+        flex: 2;
+    }
+    .app-table td {
+        padding: 8px 6px;
+        font-size: 14px;
+    }
+    .app-table__col-photo {
+        width: 120px;
+    }
+    .app-table__col-photo img {
+        width: 60px;
+        height: 60px;
+    }
 }
+
+
+
+
+
+
+
+

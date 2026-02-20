@@ -1,7 +1,7 @@
 <html lang="ru">
     <head>
         <title>Заявка № {{ .department_application.ID }} — {{ .department_application.Title }}</title>
-        <link rel="stylesheet" href="/static/styles/index_style.css">
+        <link rel="stylesheet" href="/static/styles/index_style.css?v=2">
     </head>
     <header class="header-center">
         <a href="/" class="header-logo">
@@ -30,10 +30,10 @@
             <thead>
                 <tr>
                     <th class="app-table__col-photo">Фото</th>
-                    <th>Наименование отдела</th>
-                    <th>Сотрудников</th>
-                    <th>Зарплата руководителя</th>
-                    <th>Роль в структуре</th>
+                    <th class="app-table__col-name">Наименование отдела</th>
+                    <th class="app-table__col-employees">Сотрудников</th>
+                    <th class="app-table__col-salary">Зарплата руководителя</th>
+                    <th class="app-table__col-role">Роль в структуре</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,10 +42,10 @@
                     <td class="app-table__col-photo">
                         <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
                     </td>
-                    <td>{{ .Department.Title }}</td>
-                    <td>{{ .Department.EmployeeCount }}</td>
+                    <td class="app-table__col-name">{{ .Department.Title }}</td>
+                    <td class="app-table__col-employees">{{ .Department.EmployeeCount }}</td>
                     <td class="app-table__col-salary">{{ printf "%.0f" .Salary }} ₽</td>
-                    <td>
+                    <td class="app-table__col-role">
                         <input type="text" value="{{ .Role }}" readonly class="role-input">
                     </td>
                 </tr>
