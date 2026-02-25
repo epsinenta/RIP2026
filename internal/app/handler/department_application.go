@@ -27,16 +27,11 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 
-	items, err := h.Repository.GetDepartmentApplication(id, creatorID)
+	items, totalSalary, err := h.Repository.GetDepartmentApplication(id, creatorID)
 	if err != nil {
 		logrus.Error(err)
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
-	}
-
-	var totalSalary float64
-	for _, item := range items {
-		totalSalary += item.Salary
 	}
 
 	ctx.HTML(http.StatusOK, "department_application.html", gin.H{

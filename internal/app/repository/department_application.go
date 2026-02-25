@@ -39,21 +39,26 @@ func (r *Repository) GetActiveDepartmentApplicationID(creatorID uint) uint {
 	return appID
 }
 
-func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.DepartmentApplicationDepartment, error) {
+func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.DepartmentApplicationDepartment, float64, error) {
 	var app ds.DepartmentApplication
 	err := r.db.Where("department_application_id = ? AND creator_id = ? AND status != ?",
 		id, creatorID, "deleted").First(&app).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var items []ds.DepartmentApplicationDepartment
 	err = r.db.Where("department_application_id = ?", id).
 		Preload("Department").Find(&items).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return items, nil
+
+	var totalSalary float64
+	if app.TotalSalary != nil {
+		totalSalary = *app.TotalSalary
+	}
+	return items, totalSalary, nil
 }
 
 func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
@@ -100,6 +105,9 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			Salary:                 salary,
 		}
 		if err := r.db.Create(&item).Error; err != nil {
+			return err
+		}
+		if err := r.CalculateAndSetTotalSalary(app.DepartmentApplicationID); err != nil {
 			return err
 		}
 	}
@@ -156,9 +164,12 @@ func (r *Repository) UpdateRole(appID, departmentID uint, role string) error {
 	baseSalary := roleToBaseSalary(role)
 	const k = 5000
 	salary := baseSalary + float64(dep.EmployeeCount)*k
-	return r.db.Model(&ds.DepartmentApplicationDepartment{}).
+	if err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
 		Where("department_application_id = ? AND department_id = ?", appID, departmentID).
-		Updates(map[string]interface{}{"role": role, "salary": salary}).Error
+		Updates(map[string]interface{}{"role": role, "salary": salary}).Error; err != nil {
+		return err
+	}
+	return r.CalculateAndSetTotalSalary(appID)
 }
 
 func (r *Repository) IsDraftDepartmentApplication(appID int, creatorID uint) (bool, error) {
