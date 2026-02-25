@@ -34,7 +34,7 @@ func main() {
 		logrus.Fatalf("error initializing repository: %v", err)
 	}
 
-	hand := handler.NewHandler(rep)
+	hand := handler.NewHandler(rep, conf)
 
 	application := pkg.NewApp(conf, router, hand)
 	application.RunApp()

@@ -3,16 +3,19 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"web_backend/internal/app/config"
 	"web_backend/internal/app/repository"
 )
 
 type Handler struct {
 	Repository *repository.Repository
+	Config     *config.Config
 }
 
-func NewHandler(r *repository.Repository) *Handler {
+func NewHandler(r *repository.Repository, cfg *config.Config) *Handler {
 	return &Handler{
 		Repository: r,
+		Config:     cfg,
 	}
 }
 

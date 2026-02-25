@@ -16,7 +16,7 @@
         {{ if ne .department_application_count 0 }}
         <a href="/department_application/{{ .department_application_id }}" class="application-card">
             <div class="application-card__icon">
-                <img src="http://localhost:9000/test/department.svg" alt="Структура департаментов">
+                <img src="{{ .minioUrl }}/department.svg" alt="Структура департаментов">
             </div>
             <div class="application-card__body">
                 <div class="application-card__title">Заявка на объединение департаментов</div>
@@ -28,7 +28,7 @@
         {{ else }}
         <div class="application-card application-card--inactive" style="cursor: default;">
             <div class="application-card__icon">
-                <img src="http://localhost:9000/test/department.svg" alt="Структура департаментов">
+                <img src="{{ .minioUrl }}/department.svg" alt="Структура департаментов">
             </div>
             <div class="application-card__body">
                 <div class="application-card__title">Заявка на объединение департаментов</div>
@@ -39,9 +39,9 @@
         <div class="container">
             {{ range .departments }}
             <div class="card-wrapper">
-                <a href="/department/{{ .DepartmentID }}" class="card" data-video="http://localhost:9000/test/{{ .Video }}">
+                <a href="/department/{{ .DepartmentID }}" class="card" data-video="{{ .minioUrl }}/{{ .Video }}">
                     <div class="card-accent-bar"></div>
-                    <img src="http://localhost:9000/test/{{ .Photo }}" alt="img">
+                    <img src="{{ .minioUrl }}/{{ .Photo }}" alt="img">
                     <h1>{{ .Title }}</h1>
                     <p class="card__employees">Сотрудников: {{ .EmployeeCount }}</p>
                     <p class="card__description">{{ .ShortDescription }}</p>

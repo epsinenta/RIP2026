@@ -28,10 +28,11 @@ func (h *Handler) GetDepartments(ctx *gin.Context) {
 	activeAppID := h.Repository.GetActiveDepartmentApplicationID(creatorID)
 
 	ctx.HTML(http.StatusOK, "index.html", gin.H{
-		"departments":               departments,
-		"query":                     searchQuery,
+		"departments":                 departments,
+		"query":                       searchQuery,
 		"department_application_count": appCount,
 		"department_application_id":   activeAppID,
+		"minioUrl":                    h.Config.MinioURL,
 	})
 }
 
@@ -53,5 +54,6 @@ func (h *Handler) GetDepartment(ctx *gin.Context) {
 
 	ctx.HTML(http.StatusOK, "department.html", gin.H{
 		"department": department,
+		"minioUrl":   h.Config.MinioURL,
 	})
 }

@@ -36,7 +36,7 @@
                 {{ range .department_application }}
                 <tr class="{{ if or (eq .Role "Головной") (eq .Role "Головное подразделение") }}hierarchy-level-1{{ else if or (eq .Role "Руководящий") (eq .Role "Руководящий отдел") }}hierarchy-level-2{{ else }}hierarchy-level-3{{ end }}">
                     <td class="app-table__col-photo">
-                        <img src="http://localhost:9000/test/{{ .Department.Photo }}" alt="img">
+                        <img src="{{ $.minioUrl }}/{{ .Department.Photo }}" alt="img">
                     </td>
                     <td class="app-table__col-name">{{ .Department.Title }}</td>
                     <td class="app-table__col-employees">{{ .Department.EmployeeCount }}</td>

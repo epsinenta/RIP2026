@@ -35,9 +35,10 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 	}
 
 	ctx.HTML(http.StatusOK, "department_application.html", gin.H{
-		"department_application": items,
-		"department_application_id": id,
-		"totalSalary":            totalSalary,
+		"department_application":     items,
+		"department_application_id":  id,
+		"totalSalary":                totalSalary,
+		"minioUrl":                   h.Config.MinioURL,
 	})
 }
 

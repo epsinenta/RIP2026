@@ -11,7 +11,7 @@
         </header>
         <div class="vibes-viewport">
             <video class="vibes-video" controls autoplay muted loop>
-                <source src="http://localhost:9000/test/{{ .department.Video }}" type="video/mp4">
+                <source src="{{ .minioUrl }}/{{ .department.Video }}" type="video/mp4">
             </video>
             <div class="vibes-overlay"></div>
             <a href="/" class="vibes-back">
