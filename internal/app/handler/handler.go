@@ -25,6 +25,7 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.GET("/department_application/:id", h.GetDepartmentApplication)
 	router.POST("/department_application/add", h.AddToDepartmentApplication)
 	router.POST("/department_application/update_role", h.UpdateRole)
+	router.POST("/department_application/move", h.MoveDepartment)
 	router.POST("/department_application/delete", h.DeleteDepartmentApplication)
 }
 

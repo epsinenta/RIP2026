@@ -105,3 +105,36 @@ func (h *Handler) UpdateRole(ctx *gin.Context) {
 
 	ctx.Redirect(http.StatusSeeOther, "/department_application/"+appIDStr)
 }
+
+func (h *Handler) MoveDepartment(ctx *gin.Context) {
+	appIDStr := ctx.PostForm("department_application_id")
+	appID, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	departmentIDStr := ctx.PostForm("department_id")
+	departmentID, err := strconv.Atoi(departmentIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	directionStr := ctx.PostForm("direction")
+	var direction int
+	if directionStr == "up" {
+		direction = -1
+	} else if directionStr == "down" {
+		direction = 1
+	} else {
+		h.errorHandler(ctx, http.StatusBadRequest, nil)
+		return
+	}
+
+	err = h.Repository.MoveDepartmentInApplication(uint(appID), uint(departmentID), direction)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/department_application/"+appIDStr)
+}

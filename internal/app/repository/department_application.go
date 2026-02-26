@@ -3,12 +3,59 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 	"web_backend/internal/app/ds"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
+
+func roleToLevel(role string) int {
+	switch role {
+	case "Головной":
+		return 3
+	case "Руководящий":
+		return 2
+	default:
+		return 1
+	}
+}
+
+func (r *Repository) RecalculateMainDepartments(appID uint) error {
+	var items []ds.DepartmentApplicationDepartment
+	if err := r.db.Where("department_application_id = ?", appID).Find(&items).Error; err != nil {
+		return err
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].SortOrder != items[j].SortOrder {
+			return items[i].SortOrder < items[j].SortOrder
+		}
+		return roleToLevel(items[i].Role) > roleToLevel(items[j].Role)
+	})
+	for i := range items {
+		var mainID uint
+		if roleToLevel(items[i].Role) == 3 {
+			mainID = items[i].DepartmentID
+		} else {
+			for j := i - 1; j >= 0; j-- {
+				if roleToLevel(items[j].Role) > roleToLevel(items[i].Role) {
+					mainID = items[j].DepartmentID
+					break
+				}
+			}
+			if mainID == 0 {
+				mainID = items[i].DepartmentID
+			}
+		}
+		if err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
+			Where("department_application_id = ? AND department_id = ?", appID, items[i].DepartmentID).
+			Update("main_department_id", mainID).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func (r *Repository) GetDepartmentApplicationCount(creatorID uint) int64 {
 	var appID uint
@@ -49,7 +96,8 @@ func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.Depa
 
 	var items []ds.DepartmentApplicationDepartment
 	err = r.db.Where("department_application_id = ?", id).
-		Preload("Department").Find(&items).Error
+		Preload("Department").Preload("MainDepartment").
+		Order("sort_order ASC, department_id ASC").Find(&items).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -72,7 +120,6 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			Status:    "draft",
 			CreatedAt: time.Now(),
 			CreatorID: creatorID,
-			Title:     "Заявка на объединение департаментов",
 		}
 		if err := r.db.Create(&app).Error; err != nil {
 			return err
@@ -92,19 +139,28 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			return err
 		}
 
-		const k = 5000
+		var maxOrder int
+		r.db.Model(&ds.DepartmentApplicationDepartment{}).
+			Where("department_application_id = ?", app.DepartmentApplicationID).
+			Select("COALESCE(MAX(sort_order), -1)").Scan(&maxOrder)
+
+		amount := 1
 		baseSalary := roleToBaseSalary("Головной")
-		salary := baseSalary + float64(dep.EmployeeCount)*k
+		salary := baseSalary + float64(dep.EmployeeCount)*5000
 
 		item := ds.DepartmentApplicationDepartment{
 			DepartmentApplicationID: app.DepartmentApplicationID,
 			DepartmentID:            departmentID,
-			Amount:                 1,
-			IsMain:                 true,
-			Role:                   "Головной",
-			Salary:                 salary,
+			Amount:                  &amount,
+			MainDepartmentID:        &departmentID,
+			SortOrder:               maxOrder + 1,
+			Role:                    "Головной",
+			Salary:                  &salary,
 		}
 		if err := r.db.Create(&item).Error; err != nil {
+			return err
+		}
+		if err := r.RecalculateMainDepartments(app.DepartmentApplicationID); err != nil {
 			return err
 		}
 		if err := r.CalculateAndSetTotalSalary(app.DepartmentApplicationID); err != nil {
@@ -162,14 +218,47 @@ func (r *Repository) UpdateRole(appID, departmentID uint, role string) error {
 		return err
 	}
 	baseSalary := roleToBaseSalary(role)
-	const k = 5000
-	salary := baseSalary + float64(dep.EmployeeCount)*k
+	salary := baseSalary + float64(dep.EmployeeCount)*5000
 	if err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
 		Where("department_application_id = ? AND department_id = ?", appID, departmentID).
 		Updates(map[string]interface{}{"role": role, "salary": salary}).Error; err != nil {
 		return err
 	}
+	if err := r.RecalculateMainDepartments(appID); err != nil {
+		return err
+	}
 	return r.CalculateAndSetTotalSalary(appID)
+}
+
+func (r *Repository) MoveDepartmentInApplication(appID, departmentID uint, direction int) error {
+	var items []ds.DepartmentApplicationDepartment
+	if err := r.db.Where("department_application_id = ?", appID).
+		Order("sort_order ASC, department_id ASC").Find(&items).Error; err != nil {
+		return err
+	}
+	idx := -1
+	for i := range items {
+		if items[i].DepartmentID == departmentID {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return fmt.Errorf("department %d not in application %d", departmentID, appID)
+	}
+	newIdx := idx + direction
+	if newIdx < 0 || newIdx >= len(items) {
+		return nil
+	}
+	items[idx], items[newIdx] = items[newIdx], items[idx]
+	for i := range items {
+		if err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
+			Where("department_application_id = ? AND department_id = ?", appID, items[i].DepartmentID).
+			Update("sort_order", i).Error; err != nil {
+			return err
+		}
+	}
+	return r.RecalculateMainDepartments(appID)
 }
 
 func (r *Repository) IsDraftDepartmentApplication(appID int, creatorID uint) (bool, error) {

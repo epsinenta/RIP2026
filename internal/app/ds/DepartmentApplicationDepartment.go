@@ -1,14 +1,16 @@
 package ds
 
 type DepartmentApplicationDepartment struct {
-	DepartmentApplicationID uint    `gorm:"primaryKey;column:department_application_id"`
-	DepartmentID            uint    `gorm:"primaryKey;column:department_id"`
-	Amount                  int     `gorm:"not null;default:1"`
-	IsMain                  bool    `gorm:"column:is_main;default:false"`
-	Role                    string  `gorm:"type:varchar(100)"`
-	Salary                  float64 `gorm:"type:numeric(12,2)"`
+	DepartmentApplicationID uint   `gorm:"primaryKey;column:department_application_id"`
+	DepartmentID            uint   `gorm:"primaryKey;column:department_id"`
+	Amount                  *int   `gorm:"default:1"`
+	MainDepartmentID        *uint  `gorm:"column:main_department_id"`
+	SortOrder               int    `gorm:"column:sort_order;default:0"`
+	Role                    string `gorm:"type:varchar(100)"`
+	Salary                  *float64 `gorm:"type:numeric(12,2)"`
 
-	Department           Department           `gorm:"foreignKey:DepartmentID"`
+	Department            Department            `gorm:"foreignKey:DepartmentID"`
+	MainDepartment        *Department           `gorm:"foreignKey:MainDepartmentID"`
 	DepartmentApplication DepartmentApplication `gorm:"foreignKey:DepartmentApplicationID"`
 }
 

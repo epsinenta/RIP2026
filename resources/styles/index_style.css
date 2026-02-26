@@ -792,6 +792,55 @@ a.card .card__description {
     flex: 1;
 }
 
+.app-table__col-order {
+    width: 70px;
+    flex-shrink: 0;
+}
+
+.app-table__col-main {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.move-form {
+    display: inline;
+    margin: 0 2px;
+}
+
+.move-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 2px solid #e6c935;
+    border-radius: 6px;
+    background: #ffde3c;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2c353d;
+    font-weight: 500;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.move-btn:hover:not(:disabled) {
+    background: #f5d633;
+    border-color: #d4b82a;
+}
+
+.move-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.main-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #e6c935;
+    color: #2c353d;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 .role-form {
     margin: 0;
 }

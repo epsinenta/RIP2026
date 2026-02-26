@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"strconv"
 
 	"web_backend/internal/app/config"
 	"web_backend/internal/app/dsn"
@@ -24,6 +25,34 @@ func main() {
 
 	router.SetFuncMap(template.FuncMap{
 		"printf": fmt.Sprintf,
+		"str":    func(v interface{}) string { return fmt.Sprint(v) },
+		"sub":   func(a, b int) int { return a - b },
+		"isMain": func(mainID interface{}, deptID uint) bool {
+			if mainID == nil {
+				return false
+			}
+			if p, ok := mainID.(*uint); ok && p != nil {
+				return *p == deptID
+			}
+			return false
+		},
+		"num": func(v interface{}) float64 {
+			if v == nil {
+				return 0
+			}
+			switch x := v.(type) {
+			case float64:
+				return x
+			case *float64:
+				if x == nil {
+					return 0
+				}
+				return *x
+			default:
+				f, _ := strconv.ParseFloat(fmt.Sprint(v), 64)
+				return f
+			}
+		},
 	})
 
 	postgresString := dsn.FromEnv()
