@@ -16,7 +16,7 @@ import (
 func (h *Handler) GetDepartments(ctx *gin.Context) {
 	var departments []ds.Department
 	var err error
-	searchQuery := ctx.Query("department_title")
+	searchQuery := ctx.Query("Title")
 	if searchQuery == "" {
 		departments, err = h.Repository.GetDepartments()
 	} else {
