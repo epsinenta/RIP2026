@@ -3,39 +3,31 @@
         <title>Административная структура компании — Отделы</title>
         <link rel="stylesheet" href="/static/styles/index_style.css">
     </head>
-    <header>
+    <header class="header-main">
         <a href="/" class="header-logo">
             <img src="/static/img/logo.png" alt="Логотип">
         </a>
-        <form action="/" method="GET">
+    </header>
+    <div class="search-bar">
+        <form action="/" method="GET" class="search-bar__form">
             <input type="text" name="query" class="search-input" placeholder="Поиск по отделам" value="{{ .query }}">
             <button type="submit" class="search-btn">Найти</button>
         </form>
-    </header>
+    </div>
     <div class="space">
-        {{ if ne .department_application_count 0 }}
-        <a href="/department_application/{{ .department_application_id }}" class="application-card">
-            <div class="application-card__icon">
-                <img src="{{ $.minioUrl }}/department.svg" alt="Структура департаментов">
+        <div class="cart-row">
+            {{ if ne .department_application_count 0 }}
+            <a href="/department_application/{{ .department_application_id }}" class="cart-row__link">
+                <img src="{{ $.minioUrl }}/department.svg" alt="Корзина" class="cart-row__icon">
+                <span class="cart-row__text">Отделов в заявке: {{ .department_application_count }}</span>
+            </a>
+            {{ else }}
+            <div class="cart-row__inactive">
+                <img src="{{ $.minioUrl }}/department.svg" alt="Корзина" class="cart-row__icon">
+                <span class="cart-row__text">Отделов в заявке: 0</span>
             </div>
-            <div class="application-card__body">
-                <div class="application-card__title">Заявка на объединение департаментов</div>
-                <div class="application-card__id">
-                    Отделов в заявке: <span class="application-card__link">{{ .department_application_count }}</span>
-                </div>
-            </div>
-        </a>
-        {{ else }}
-        <div class="application-card application-card--inactive" style="cursor: default;">
-            <div class="application-card__icon">
-                <img src="{{ $.minioUrl }}/department.svg" alt="Структура департаментов">
-            </div>
-            <div class="application-card__body">
-                <div class="application-card__title">Заявка на объединение департаментов</div>
-                <div class="application-card__id">Нет отделов в заявке</div>
-            </div>
+            {{ end }}
         </div>
-        {{ end }}
         <div class="container">
             {{ range .departments }}
             <div class="card-wrapper">

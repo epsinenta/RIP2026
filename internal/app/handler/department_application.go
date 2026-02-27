@@ -27,7 +27,7 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 
-	items, totalSalary, err := h.Repository.GetDepartmentApplication(id, creatorID)
+	items, err := h.Repository.GetDepartmentApplication(id, creatorID)
 	if err != nil {
 		logrus.Error(err)
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -35,10 +35,9 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 	}
 
 	ctx.HTML(http.StatusOK, "department_application.html", gin.H{
-		"department_application":     items,
-		"department_application_id":  id,
-		"totalSalary":                totalSalary,
-		"minioUrl":                   h.Config.MinioURL,
+		"department_application":    items,
+		"department_application_id": id,
+		"minioUrl":                 h.Config.MinioURL,
 	})
 }
 

@@ -14,7 +14,6 @@ type DepartmentApplication struct {
 	FinishDate              sql.NullTime `gorm:"column:finish_date"`
 	ModeratorID             *uint        `gorm:"column:moderator_id"`
 	Title                   *string      `gorm:"type:varchar(255)"`
-	TotalSalary             *float64     `gorm:"type:numeric(12,2)"`
 
 	Creator   Users  `gorm:"foreignKey:CreatorID"`
 	Moderator *Users `gorm:"foreignKey:ModeratorID"`

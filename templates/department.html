@@ -14,10 +14,6 @@
                 <source src="{{ $.minioUrl }}/{{ .department.Video }}" type="video/mp4">
             </video>
             <div class="vibes-overlay"></div>
-            <a href="/" class="vibes-back">
-                <span class="vibes-back__icon">←</span>
-                <span>Назад</span>
-            </a>
             <div class="vibes-content">
                 <h1 class="vibes-title">{{ .department.Title }}</h1>
                 <p class="vibes-meta">Сотрудников: {{ .department.EmployeeCount }} · Подчиняется: {{ .department.ReportsTo }}</p>

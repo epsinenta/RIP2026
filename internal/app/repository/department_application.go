@@ -86,12 +86,12 @@ func (r *Repository) GetActiveDepartmentApplicationID(creatorID uint) uint {
 	return appID
 }
 
-func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.DepartmentApplicationDepartment, float64, error) {
+func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.DepartmentApplicationDepartment, error) {
 	var app ds.DepartmentApplication
 	err := r.db.Where("department_application_id = ? AND creator_id = ? AND status != ?",
 		id, creatorID, "deleted").First(&app).Error
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	var items []ds.DepartmentApplicationDepartment
@@ -99,14 +99,9 @@ func (r *Repository) GetDepartmentApplication(id int, creatorID uint) ([]ds.Depa
 		Preload("Department").Preload("MainDepartment").
 		Order("sort_order ASC, department_id ASC").Find(&items).Error
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-
-	var totalSalary float64
-	if app.TotalSalary != nil {
-		totalSalary = *app.TotalSalary
-	}
-	return items, totalSalary, nil
+	return items, nil
 }
 
 func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
@@ -163,9 +158,6 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 		if err := r.RecalculateMainDepartments(app.DepartmentApplicationID); err != nil {
 			return err
 		}
-		if err := r.CalculateAndSetTotalSalary(app.DepartmentApplicationID); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -185,20 +177,6 @@ func (r *Repository) DeleteDepartmentApplication(appID uint) error {
 		return fmt.Errorf("department_application with id %d not found", appID)
 	}
 	return nil
-}
-
-func (r *Repository) CalculateAndSetTotalSalary(appID uint) error {
-	var total float64
-	err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
-		Where("department_application_id = ?", appID).
-		Select("COALESCE(SUM(salary), 0)").
-		Scan(&total).Error
-	if err != nil {
-		return err
-	}
-	return r.db.Model(&ds.DepartmentApplication{}).
-		Where("department_application_id = ?", appID).
-		Update("total_salary", total).Error
 }
 
 func roleToBaseSalary(role string) float64 {
@@ -224,10 +202,7 @@ func (r *Repository) UpdateRole(appID, departmentID uint, role string) error {
 		Updates(map[string]interface{}{"role": role, "salary": salary}).Error; err != nil {
 		return err
 	}
-	if err := r.RecalculateMainDepartments(appID); err != nil {
-		return err
-	}
-	return r.CalculateAndSetTotalSalary(appID)
+	return r.RecalculateMainDepartments(appID)
 }
 
 func (r *Repository) MoveDepartmentInApplication(appID, departmentID uint, direction int) error {

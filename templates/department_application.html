@@ -9,15 +9,11 @@
         </a>
     </header>
     <div class="application-detail">
-        <a href="/" class="back-link">← Вернуться к списку отделов</a>
         <div class="application-detail__header-card">
             <h1 class="application-detail__title">Заявка на объединение департаментов</h1>
             <div class="application-detail__info">
                 <div class="application-detail__info-item"><strong>ID заявки:</strong> {{ .department_application_id }}</div>
                 <div class="application-detail__info-item"><strong>Количество отделов:</strong> {{ len .department_application }}</div>
-            </div>
-            <div class="application-detail__salary-result">
-                Итоговая зарплата руководителей: {{ printf "%.0f" .totalSalary }} ₽
             </div>
         </div>
 

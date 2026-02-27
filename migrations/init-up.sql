@@ -26,8 +26,7 @@ CREATE TABLE IF NOT EXISTS department_applications (
     forming_date TIMESTAMP,
     finish_date TIMESTAMP,
     moderator_id INTEGER REFERENCES users(user_id),
-    title VARCHAR(255),
-    total_salary NUMERIC(12,2)
+    title VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS department_application_departments (
