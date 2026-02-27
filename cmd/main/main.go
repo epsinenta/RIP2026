@@ -58,12 +58,12 @@ func main() {
 	postgresString := dsn.FromEnv()
 	logrus.Info("DSN: ", postgresString)
 
-	rep, err := repository.New(postgresString)
+	rep, err := repository.NewRepository(postgresString)
 	if err != nil {
 		logrus.Fatalf("error initializing repository: %v", err)
 	}
 
-	hand := handler.NewHandler(rep, conf)
+	hand := handler.NewHandler(rep)
 
 	application := pkg.NewApp(conf, router, hand)
 	application.RunApp()

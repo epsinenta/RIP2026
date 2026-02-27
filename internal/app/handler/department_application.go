@@ -1,12 +1,80 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+
+	"web_backend/internal/app/repository"
+	"web_backend/internal/app/serializer"
 )
+
+func (h *Handler) GetDepartmentApplicationCart(ctx *gin.Context) {
+	creatorID := uint(h.Repository.GetUserID())
+	count := h.Repository.GetDepartmentApplicationCount(creatorID)
+	if count == 0 {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":                    "no_draft",
+			"departments_count":         count,
+		})
+		return
+	}
+	app, err := h.Repository.CheckCurrentDepartmentApplicationDraft(creatorID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotAllowed) {
+			h.errorHandler(ctx, http.StatusUnauthorized, err)
+		} else if errors.Is(err, repository.ErrNoDraft) {
+			ctx.JSON(http.StatusOK, gin.H{
+				"status":            "no_draft",
+				"departments_count": 0,
+			})
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":                app.DepartmentApplicationID,
+		"departments_count": h.Repository.GetDepartmentApplicationCount(creatorID),
+	})
+}
+
+func (h *Handler) GetAllDepartmentApplications(ctx *gin.Context) {
+	fromDate := ctx.Query("from-date")
+	var from, to time.Time
+	if fromDate != "" {
+		t, err := time.Parse("2006-01-02", fromDate)
+		if err != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
+		from = t
+	}
+	toDate := ctx.Query("to-date")
+	if toDate != "" {
+		t, err := time.Parse("2006-01-02", toDate)
+		if err != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
+		to = t
+	}
+	status := ctx.Query("status")
+	apps, err := h.Repository.GetAllDepartmentApplications(from, to, status)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	resp := make([]serializer.DepartmentApplicationJSON, 0, len(apps))
+	for _, app := range apps {
+		creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+		resp = append(resp, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	}
+	ctx.JSON(http.StatusOK, resp)
+}
 
 func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 	idStr := ctx.Param("id")
@@ -15,125 +83,119 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	creatorID := uint(1)
-	isDraft, err := h.Repository.IsDraftDepartmentApplication(id, creatorID)
+	deps, app, err := h.Repository.GetDepartmentApplicationWithDepartments(id)
 	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else if errors.Is(err, repository.ErrNotAllowed) {
+			h.errorHandler(ctx, http.StatusForbidden, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
 		return
 	}
-	if !isDraft {
-		ctx.Redirect(http.StatusSeeOther, "/")
-		return
+	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	depResp := make([]serializer.DepartmentJSON, 0, len(deps))
+	for _, d := range deps {
+		depResp = append(depResp, serializer.DepartmentToJSON(d))
 	}
-
-	items, err := h.Repository.GetDepartmentApplication(id, creatorID)
-	if err != nil {
-		logrus.Error(err)
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.HTML(http.StatusOK, "department_application.html", gin.H{
-		"department_application":    items,
-		"department_application_id": id,
-		"minioUrl":                 h.Config.MinioURL,
+	ctx.JSON(http.StatusOK, gin.H{
+		"department_application": serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin),
+		"departments":             depResp,
 	})
 }
 
-func (h *Handler) AddToDepartmentApplication(ctx *gin.Context) {
-	departmentIDStr := ctx.PostForm("department_id")
-	departmentID, err := strconv.Atoi(departmentIDStr)
+func (h *Handler) EditDepartmentApplication(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	creatorID := uint(1)
-
-	err = h.Repository.AddDepartment(uint(departmentID), creatorID)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+	var j serializer.DepartmentApplicationJSON
+	if err := ctx.BindJSON(&j); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
+	app, err := h.Repository.EditDepartmentApplication(id, j)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+}
 
-	ctx.Redirect(http.StatusSeeOther, ctx.Request.Referer())
+func (h *Handler) FormDepartmentApplication(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	app, err := h.Repository.FormDepartmentApplication(id, "formed")
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else if errors.Is(err, repository.ErrNotAllowed) {
+			h.errorHandler(ctx, http.StatusForbidden, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+}
+
+func (h *Handler) FinishDepartmentApplication(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	var statusJSON serializer.StatusJSON
+	if err := ctx.BindJSON(&statusJSON); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	app, err := h.Repository.FinishDepartmentApplication(id, statusJSON.Status)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else if errors.Is(err, repository.ErrNotAllowed) {
+			h.errorHandler(ctx, http.StatusForbidden, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
 }
 
 func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {
-	appIDStr := ctx.PostForm("department_application_id")
-	appID, err := strconv.Atoi(appIDStr)
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	err = h.Repository.DeleteDepartmentApplication(uint(appID))
+	_, err = h.Repository.FormDepartmentApplication(id, "deleted")
 	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else if errors.Is(err, repository.ErrNotAllowed) {
+			h.errorHandler(ctx, http.StatusForbidden, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
 		return
 	}
-
-	ctx.Redirect(http.StatusSeeOther, "/")
-}
-
-func (h *Handler) UpdateRole(ctx *gin.Context) {
-	appIDStr := ctx.PostForm("department_application_id")
-	appID, err := strconv.Atoi(appIDStr)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
-		return
-	}
-	departmentIDStr := ctx.PostForm("department_id")
-	departmentID, err := strconv.Atoi(departmentIDStr)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
-		return
-	}
-	role := ctx.PostForm("role")
-	if role == "" {
-		h.errorHandler(ctx, http.StatusBadRequest, nil)
-		return
-	}
-
-	err = h.Repository.UpdateRole(uint(appID), uint(departmentID), role)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.Redirect(http.StatusSeeOther, "/department_application/"+appIDStr)
-}
-
-func (h *Handler) MoveDepartment(ctx *gin.Context) {
-	appIDStr := ctx.PostForm("department_application_id")
-	appID, err := strconv.Atoi(appIDStr)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
-		return
-	}
-	departmentIDStr := ctx.PostForm("department_id")
-	departmentID, err := strconv.Atoi(departmentIDStr)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
-		return
-	}
-	directionStr := ctx.PostForm("direction")
-	var direction int
-	if directionStr == "up" {
-		direction = -1
-	} else if directionStr == "down" {
-		direction = 1
-	} else {
-		h.errorHandler(ctx, http.StatusBadRequest, nil)
-		return
-	}
-
-	err = h.Repository.MoveDepartmentInApplication(uint(appID), uint(departmentID), direction)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.Redirect(http.StatusSeeOther, "/department_application/"+appIDStr)
+	ctx.JSON(http.StatusOK, gin.H{"message": "Department application deleted"})
 }

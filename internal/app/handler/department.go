@@ -1,59 +1,171 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
-	"web_backend/internal/app/ds"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+
+	"web_backend/internal/app/ds"
+	"web_backend/internal/app/repository"
+	"web_backend/internal/app/serializer"
 )
 
 func (h *Handler) GetDepartments(ctx *gin.Context) {
 	var departments []ds.Department
 	var err error
-
-	searchQuery := ctx.Query("query")
+	searchQuery := ctx.Query("department_title")
 	if searchQuery == "" {
 		departments, err = h.Repository.GetDepartments()
 	} else {
 		departments, err = h.Repository.GetDepartmentsByTitle(searchQuery)
 	}
 	if err != nil {
-		logrus.Error(err)
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
 	}
-
-	creatorID := uint(1)
-	appCount := h.Repository.GetDepartmentApplicationCount(creatorID)
-	activeAppID := h.Repository.GetActiveDepartmentApplicationID(creatorID)
-
-	ctx.HTML(http.StatusOK, "index.html", gin.H{
-		"departments":                 departments,
-		"query":                       searchQuery,
-		"department_application_count": appCount,
-		"department_application_id":   activeAppID,
-		"minioUrl":                    h.Config.MinioURL,
-	})
+	resp := make([]serializer.DepartmentJSON, 0, len(departments))
+	for _, d := range departments {
+		resp = append(resp, serializer.DepartmentToJSON(d))
+	}
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func (h *Handler) GetDepartment(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		logrus.Error(err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-
 	department, err := h.Repository.GetDepartment(id)
 	if err != nil {
-		logrus.Error(err)
-		ctx.AbortWithStatus(http.StatusNotFound)
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
 		return
 	}
+	ctx.JSON(http.StatusOK, serializer.DepartmentToJSON(*department))
+}
 
-	ctx.HTML(http.StatusOK, "department.html", gin.H{
-		"department": department,
-		"minioUrl":   h.Config.MinioURL,
+func (h *Handler) CreateDepartment(ctx *gin.Context) {
+	var j serializer.DepartmentJSON
+	if err := ctx.BindJSON(&j); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	department, err := h.Repository.CreateDepartment(j)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	ctx.Header("Location", fmt.Sprintf("/api/department/%d", department.DepartmentID))
+	ctx.JSON(http.StatusCreated, serializer.DepartmentToJSON(department))
+}
+
+func (h *Handler) EditDepartment(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	var j serializer.DepartmentJSON
+	if err := ctx.BindJSON(&j); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	department, err := h.Repository.EditDepartment(id, j)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, serializer.DepartmentToJSON(department))
+}
+
+func (h *Handler) DeleteDepartment(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	err = h.Repository.DeleteDepartment(id)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"status": "deleted"})
+}
+
+func (h *Handler) AddToDepartmentApplication(ctx *gin.Context) {
+	departmentIDStr := ctx.Param("id")
+	departmentID, err := strconv.Atoi(departmentIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	creatorID := uint(h.Repository.GetUserID())
+	app, created, err := h.Repository.GetDepartmentApplicationDraft(creatorID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	err = h.Repository.AddDepartment(uint(departmentID), creatorID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else if errors.Is(err, repository.ErrAlreadyExists) {
+			h.errorHandler(ctx, http.StatusConflict, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	status := http.StatusOK
+	if created {
+		ctx.Header("Location", fmt.Sprintf("/api/department_application/%d", app.DepartmentApplicationID))
+		status = http.StatusCreated
+	}
+	ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+}
+
+func (h *Handler) AddPhoto(ctx *gin.Context) {
+	departmentIDStr := ctx.Param("id")
+	departmentID, err := strconv.Atoi(departmentIDStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	department, err := h.Repository.AddPhoto(ctx, departmentID, file)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+		} else {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":     "uploaded",
+		"department": serializer.DepartmentToJSON(department),
 	})
 }

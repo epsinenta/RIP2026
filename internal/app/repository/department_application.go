@@ -1,14 +1,17 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"sort"
 	"time"
-	"web_backend/internal/app/ds"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	"web_backend/internal/app/ds"
+	"web_backend/internal/app/serializer"
 )
 
 func roleToLevel(role string) int {
@@ -128,9 +131,16 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 		Where("department_application_id = ? AND department_id = ?", app.DepartmentApplicationID, departmentID).
 		Count(&count)
 
-	if count == 0 {
+	if count > 0 {
+		return fmt.Errorf("%w: отдел %d уже в заявке %d", ErrAlreadyExists, departmentID, app.DepartmentApplicationID)
+	}
+
+	{
 		var dep ds.Department
 		if err := r.db.First(&dep, departmentID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("%w: отдел с id %d", ErrNotFound, departmentID)
+			}
 			return err
 		}
 
@@ -161,6 +171,222 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) GetDepartmentApplicationDraft(creatorID uint) (ds.DepartmentApplication, bool, error) {
+	app, err := r.CheckCurrentDepartmentApplicationDraft(creatorID)
+	if errors.Is(err, ErrNoDraft) {
+		app = ds.DepartmentApplication{
+			Status:    "draft",
+			CreatedAt: time.Now(),
+			CreatorID: creatorID,
+		}
+		if err := r.db.Create(&app).Error; err != nil {
+			return ds.DepartmentApplication{}, false, err
+		}
+		return app, true, nil
+	}
+	if err != nil {
+		return ds.DepartmentApplication{}, false, err
+	}
+	return app, false, nil
+}
+
+func (r *Repository) CheckCurrentDepartmentApplicationDraft(creatorID uint) (ds.DepartmentApplication, error) {
+	if creatorID == 0 {
+		return ds.DepartmentApplication{}, ErrNotAllowed
+	}
+	var app ds.DepartmentApplication
+	res := r.db.Where("creator_id = ? AND status = ?", creatorID, "draft").Limit(1).Find(&app)
+	if res.Error != nil {
+		return ds.DepartmentApplication{}, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return ds.DepartmentApplication{}, ErrNoDraft
+	}
+	return app, nil
+}
+
+func (r *Repository) GetModeratorAndCreatorLogin(app ds.DepartmentApplication) (string, string, error) {
+	var creator ds.Users
+	if err := r.db.Where("user_id = ?", app.CreatorID).First(&creator).Error; err != nil {
+		return "", "", err
+	}
+	var moderatorLogin string
+	if app.ModeratorID != nil && *app.ModeratorID != 0 {
+		var moderator ds.Users
+		if err := r.db.Where("user_id = ?", *app.ModeratorID).First(&moderator).Error; err != nil {
+			return "", "", err
+		}
+		moderatorLogin = moderator.Login
+	}
+	return creator.Login, moderatorLogin, nil
+}
+
+func (r *Repository) GetAllDepartmentApplications(from, to time.Time, status string) ([]ds.DepartmentApplication, error) {
+	var apps []ds.DepartmentApplication
+	sub := r.db.Where("status != ? AND status != ?", "deleted", "draft")
+	if !from.IsZero() {
+		sub = sub.Where("forming_date > ?", from)
+	}
+	if !to.IsZero() {
+		sub = sub.Where("forming_date < ?", to.Add(time.Hour*24))
+	}
+	if status != "" {
+		sub = sub.Where("status = ?", status)
+	}
+	err := sub.Order("department_application_id").Find(&apps).Error
+	return apps, err
+}
+
+func (r *Repository) GetSingleDepartmentApplication(id int) (ds.DepartmentApplication, error) {
+	if id < 0 {
+		return ds.DepartmentApplication{}, errors.New("неверное id")
+	}
+	var app ds.DepartmentApplication
+	err := r.db.Where("department_application_id = ?", id).First(&app).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ds.DepartmentApplication{}, fmt.Errorf("%w: заявка с id %d", ErrNotFound, id)
+		}
+		return ds.DepartmentApplication{}, err
+	}
+	if app.Status == "deleted" {
+		return ds.DepartmentApplication{}, fmt.Errorf("%w: заявка удалена", ErrNotAllowed)
+	}
+	return app, nil
+}
+
+func (r *Repository) GetDepartmentApplicationWithDepartments(id int) ([]ds.Department, ds.DepartmentApplication, error) {
+	app, err := r.GetSingleDepartmentApplication(id)
+	if err != nil {
+		return nil, ds.DepartmentApplication{}, err
+	}
+	var deps []ds.Department
+	sub := r.db.Table("department_application_departments").Where("department_application_id = ?", app.DepartmentApplicationID)
+	err = r.db.Where("department_id IN (?) AND is_deleted = ?", sub.Select("department_id"), false).Find(&deps).Error
+	if err != nil {
+		return nil, ds.DepartmentApplication{}, err
+	}
+	return deps, app, nil
+}
+
+func (r *Repository) FormDepartmentApplication(id int, status string) (ds.DepartmentApplication, error) {
+	app, err := r.GetSingleDepartmentApplication(id)
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	if app.Status != "draft" {
+		return ds.DepartmentApplication{}, fmt.Errorf("эта заявка не может быть %s", status)
+	}
+	if status != "deleted" {
+		if app.Title == nil || *app.Title == "" {
+			return ds.DepartmentApplication{}, errors.New("укажите название заявки")
+		}
+		items, _ := r.GetDepartmentApplicationItems(int(app.DepartmentApplicationID))
+		for _, item := range items {
+			if item.Role == "" {
+				return ds.DepartmentApplication{}, errors.New("укажите роль для каждого отдела")
+			}
+		}
+	}
+	formingDate := time.Now()
+	err = r.db.Model(&app).Updates(map[string]interface{}{
+		"status":       status,
+		"forming_date": formingDate,
+	}).Error
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	app.Status = status
+	app.FormingDate = &formingDate
+	return app, nil
+}
+
+func (r *Repository) GetDepartmentApplicationItems(appID int) ([]ds.DepartmentApplicationDepartment, error) {
+	var items []ds.DepartmentApplicationDepartment
+	err := r.db.Where("department_application_id = ?", appID).
+		Preload("Department").Preload("MainDepartment").
+		Order("sort_order ASC, department_id ASC").Find(&items).Error
+	return items, err
+}
+
+func (r *Repository) EditDepartmentApplication(id int, j serializer.DepartmentApplicationJSON) (ds.DepartmentApplication, error) {
+	var app ds.DepartmentApplication
+	if id < 0 {
+		return ds.DepartmentApplication{}, errors.New("неправильное id")
+	}
+	err := r.db.Where("department_application_id = ? AND status != ?", id, "deleted").First(&app).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ds.DepartmentApplication{}, fmt.Errorf("%w: заявка с id %d", ErrNotFound, id)
+		}
+		return ds.DepartmentApplication{}, err
+	}
+	updates := serializer.DepartmentApplicationFromJSON(j)
+	err = r.db.Model(&app).Updates(updates).Error
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	r.db.Where("department_application_id = ?", id).First(&app)
+	return app, nil
+}
+
+func (r *Repository) FinishDepartmentApplication(id int, status string) (ds.DepartmentApplication, error) {
+	if status != "completed" && status != "rejected" {
+		return ds.DepartmentApplication{}, errors.New("неверный статус")
+	}
+	user, err := r.GetUserByID(r.GetUserID())
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	if !user.IsModerator {
+		return ds.DepartmentApplication{}, fmt.Errorf("%w: вы не модератор", ErrNotAllowed)
+	}
+	app, err := r.GetSingleDepartmentApplication(id)
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	if app.Status != "formed" {
+		return ds.DepartmentApplication{}, fmt.Errorf("эта заявка не может быть %s", status)
+	}
+	finishDate := time.Now()
+	err = r.db.Model(&app).Updates(map[string]interface{}{
+		"status":      status,
+		"finish_date": finishDate,
+		"moderator_id": user.UserID,
+	}).Error
+	if err != nil {
+		return ds.DepartmentApplication{}, err
+	}
+	app.Status = status
+	app.FinishDate = sql.NullTime{Time: finishDate, Valid: true}
+	if app.ModeratorID == nil {
+		uid := user.UserID
+		app.ModeratorID = &uid
+	} else {
+		*app.ModeratorID = user.UserID
+	}
+	if status == "completed" {
+		items, err := r.GetDepartmentApplicationItems(int(app.DepartmentApplicationID))
+		if err != nil {
+			return ds.DepartmentApplication{}, err
+		}
+		for _, item := range items {
+			var dep ds.Department
+			if err := r.db.First(&dep, item.DepartmentID).Error; err != nil {
+				return ds.DepartmentApplication{}, err
+			}
+			salary := roleToBaseSalary(item.Role) + float64(dep.EmployeeCount)*5000
+			if item.Salary == nil {
+				item.Salary = &salary
+			} else {
+				*item.Salary = salary
+			}
+			r.db.Model(&item).Update("salary", salary)
+		}
+	}
+	return app, nil
 }
 
 func (r *Repository) DeleteDepartmentApplication(appID uint) error {
