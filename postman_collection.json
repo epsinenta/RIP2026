@@ -1,0 +1,219 @@
+{
+	"info": {
+		"name": "Заявки на отделы",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:8080"},
+		{"key": "departmentId", "value": "1"},
+		{"key": "applicationId", "value": "1"}
+	],
+	"item": [
+		{
+			"name": "Отделы",
+			"item": [
+				{
+					"name": "Список отделов",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/departments"
+					}
+				},
+				{
+					"name": "Список отделов с фильтром",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/departments?Title=Отдел"
+					}
+				},
+				{
+					"name": "Один отдел",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/department/{{departmentId}}"
+					}
+				},
+				{
+					"name": "Создать отдел",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\":\"Новый отдел\",\"description\":\"Описание\",\"employee_count\":10,\"video\":\"department_video.mp4\"}"
+						},
+						"url": "{{baseUrl}}/api/department/create-department"
+					}
+				},
+				{
+					"name": "Изменить отдел",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\":\"Отдел обновлён\",\"description\":\"Новое описание\",\"employee_count\":15,\"video\":\"new_video.mp4\"}"
+						},
+						"url": "{{baseUrl}}/api/department/{{departmentId}}/edit-department"
+					}
+				},
+				{
+					"name": "Добавить фото отдела",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "formdata",
+							"formdata": [{"key": "image", "type": "file", "src": ""}]
+						},
+						"url": "{{baseUrl}}/api/department/{{departmentId}}/add-photo"
+					}
+				},
+				{
+					"name": "Добавить отдел в заявку",
+					"request": {
+						"method": "POST",
+						"url": "{{baseUrl}}/api/department/{{departmentId}}/add-to-department_application"
+					}
+				},
+			]
+		},
+		{
+			"name": "Заявки",
+			"item": [
+				{
+					"name": "Иконка корзины",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/department_application/department_application-cart"
+					}
+				},
+				{
+					"name": "Список заявок",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/department_application/all-department_applications"
+					}
+				},
+				{
+					"name": "Список заявок с фильтром",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/department_application/all-department_applications?from-date=2025-01-01&to-date=2025-12-31&status=formed"
+					}
+				},
+				{
+					"name": "Одна заявка",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/department_application/{{applicationId}}"
+					}
+				},
+				{
+					"name": "Изменить заявку",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\":\"Заявка на комплектование\"}"
+						},
+						"url": "{{baseUrl}}/api/department_application/{{applicationId}}/edit-department_application"
+					}
+				},
+				{
+					"name": "Сформировать заявку",
+					"request": {
+						"method": "PUT",
+						"url": "{{baseUrl}}/api/department_application/{{applicationId}}/form-department_application"
+					}
+				},
+				{
+					"name": "Завершить заявку",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"status\":\"completed\"}"
+						},
+						"url": "{{baseUrl}}/api/department_application/{{applicationId}}/finish-department_application"
+					}
+				},
+				{
+					"name": "Удалить заявку",
+					"request": {
+						"method": "DELETE",
+						"url": "{{baseUrl}}/api/department_application/{{applicationId}}/delete-department_application"
+					}
+				}
+			]
+		},
+		{
+			"name": "Заявка-отдел (м-м)",
+			"item": [
+				{
+					"name": "Изменить поле м-м",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"role\":\"Руководящий\",\"sort_order\":0}"
+						},
+						"url": "{{baseUrl}}/api/dep_app_dep/{{departmentId}}/{{applicationId}}"
+					}
+				},
+				{
+					"name": "Удалить отдел из заявки",
+					"request": {
+						"method": "DELETE",
+						"url": "{{baseUrl}}/api/dep_app_dep/{{departmentId}}/{{applicationId}}"
+					}
+				}
+			]
+		},
+		{
+			"name": "Пользователи",
+			"item": [
+				{
+					"name": "Регистрация",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"login\":\"user2\",\"password\":\"pass2\"}"
+						},
+						"url": "{{baseUrl}}/api/users/signup"
+					}
+				},
+				{
+					"name": "Вход",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"login\":\"moderator\",\"password\":\"modpass\"}"
+						},
+						"url": "{{baseUrl}}/api/users/signin"
+					}
+				},
+				{
+					"name": "Данные пользователя",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/api/users/info"
+					}
+				},
+				{
+					"name": "Выход",
+					"request": {
+						"method": "POST",
+						"url": "{{baseUrl}}/api/users/signout"
+					}
+				}
+			]
+		}
+	]
+}
