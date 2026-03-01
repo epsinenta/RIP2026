@@ -2,10 +2,14 @@ package handler
 
 import (
 	"errors"
+	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"web_backend/internal/app/ds"
 	"web_backend/internal/app/repository"
 )
 
@@ -19,7 +23,93 @@ func NewHandler(r *repository.Repository) *Handler {
 	}
 }
 
+func (h *Handler) getMinioURL() string {
+	if url := os.Getenv("MINIO_URL"); url != "" {
+		return url
+	}
+	return "http://localhost:9000/test"
+}
+
+func (h *Handler) DepartmentPage(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	department, err := h.Repository.GetDepartment(id)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			ctx.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	ctx.HTML(http.StatusOK, "department.html", gin.H{
+		"department": *department,
+		"minioUrl":  h.getMinioURL(),
+	})
+}
+
+func (h *Handler) DepartmentApplicationPage(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	_, err = h.Repository.GetSingleDepartmentApplication(id)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, repository.ErrNotAllowed) {
+			ctx.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	items, err := h.Repository.GetDepartmentApplicationItems(id)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	ctx.HTML(http.StatusOK, "department_application.html", gin.H{
+		"department_application_id": id,
+		"department_application":   items,
+		"minioUrl":                 h.getMinioURL(),
+	})
+}
+
+func (h *Handler) Index(ctx *gin.Context) {
+	query := ctx.Query("query")
+	var departments []ds.Department
+	var err error
+	if query == "" {
+		departments, err = h.Repository.GetDepartments()
+	} else {
+		departments, err = h.Repository.GetDepartmentsByTitle(query)
+	}
+	if err != nil {
+		departments = []ds.Department{}
+	}
+
+	creatorID := uint(h.Repository.GetUserID())
+	count := int(h.Repository.GetDepartmentApplicationCount(creatorID))
+	appID := h.Repository.GetActiveDepartmentApplicationID(creatorID)
+
+	ctx.HTML(http.StatusOK, "index.html", gin.H{
+		"query":                     query,
+		"departments":                departments,
+		"department_application_count": count,
+		"department_application_id":   appID,
+		"minioUrl":                   h.getMinioURL(),
+	})
+}
+
 func (h *Handler) RegisterHandler(router *gin.Engine) {
+	router.GET("/", h.Index)
+	router.GET("/department/:id", h.DepartmentPage)
+	router.GET("/department_application/:id", h.DepartmentApplicationPage)
 	router.GET("/api/departments", h.GetDepartments)
 	router.GET("/api/department/:id", h.GetDepartment)
 	router.POST("/api/department/create-department", h.CreateDepartment)
