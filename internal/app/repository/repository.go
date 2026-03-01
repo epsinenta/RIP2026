@@ -45,6 +45,12 @@ func New(dsn string) (*Repository, error) {
 	return NewRepository(dsn)
 }
 
+const creatorUserID = 1
+
+func (r *Repository) GetCreatorID() int {
+	return creatorUserID
+}
+
 func (r *Repository) GetUserID() int {
 	return r.userID
 }

@@ -51,6 +51,34 @@ func UploadImage(ctx context.Context, client *minio.Client, bucket string, file 
 	return objectName, nil
 }
 
+func UploadVideo(ctx context.Context, client *minio.Client, bucket string, file *multipart.FileHeader, departmentID uint) (string, error) {
+	f, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	contentType := file.Header.Get("Content-Type")
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		switch contentType {
+		case "video/mp4":
+			ext = ".mp4"
+		case "video/webm":
+			ext = ".webm"
+		default:
+			ext = ".mp4"
+		}
+	}
+	objectName := fmt.Sprintf("department_%d%s", departmentID, ext)
+
+	_, err = UploadFromReader(ctx, client, bucket, objectName, f, file.Size, contentType)
+	if err != nil {
+		return "", err
+	}
+	return objectName, nil
+}
+
 func UploadFromReader(ctx context.Context, client *minio.Client, bucket, objectName string, r io.Reader, size int64, contentType string) (minio.UploadInfo, error) {
 	info, err := client.PutObject(ctx, bucket, objectName, r, size, minio.PutObjectOptions{
 		ContentType: contentType,

@@ -66,47 +66,6 @@ func (h *Handler) SignIn(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, serializer.UserToJSON(user))
 }
 
-func (h *Handler) GetInfo(ctx *gin.Context) {
-	userID := h.Repository.GetUserID()
-	if userID == 0 {
-		h.errorHandler(ctx, http.StatusUnauthorized, fmt.Errorf("user not authenticated"))
-		return
-	}
-	user, err := h.Repository.GetUserByID(userID)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			h.errorHandler(ctx, http.StatusNotFound, err)
-		} else {
-			h.errorHandler(ctx, http.StatusInternalServerError, err)
-		}
-		return
-	}
-	ctx.JSON(http.StatusOK, serializer.UserToJSON(user))
-}
-
-func (h *Handler) EditInfo(ctx *gin.Context) {
-	userID := h.Repository.GetUserID()
-	if userID == 0 {
-		h.errorHandler(ctx, http.StatusUnauthorized, fmt.Errorf("user not authenticated"))
-		return
-	}
-	var j serializer.UserJSON
-	if err := ctx.BindJSON(&j); err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
-		return
-	}
-	user, err := h.Repository.EditInfo(userID, j)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			h.errorHandler(ctx, http.StatusNotFound, err)
-		} else {
-			h.errorHandler(ctx, http.StatusInternalServerError, err)
-		}
-		return
-	}
-	ctx.JSON(http.StatusOK, serializer.UserToJSON(user))
-}
-
 func (h *Handler) SignOut(ctx *gin.Context) {
 	h.Repository.SignOut()
 	ctx.JSON(http.StatusOK, gin.H{

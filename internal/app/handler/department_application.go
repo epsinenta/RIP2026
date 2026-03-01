@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,7 +14,7 @@ import (
 )
 
 func (h *Handler) GetDepartmentApplicationCart(ctx *gin.Context) {
-	creatorID := uint(h.Repository.GetUserID())
+	creatorID := uint(h.Repository.GetCreatorID())
 	count := h.Repository.GetDepartmentApplicationCount(creatorID)
 	if count == 0 {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -198,4 +199,79 @@ func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Department application deleted"})
+}
+
+func (h *Handler) DeleteDepartmentApplicationFromForm(ctx *gin.Context) {
+	idStr := ctx.PostForm("department_application_id")
+	if idStr == "" {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	_, err = h.Repository.FormDepartmentApplication(id, "deleted")
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	ctx.Redirect(http.StatusSeeOther, "/")
+}
+
+func (h *Handler) MoveDepartmentInApplicationFromForm(ctx *gin.Context) {
+	appIDStr := ctx.PostForm("department_application_id")
+	depIDStr := ctx.PostForm("department_id")
+	directionStr := ctx.PostForm("direction")
+	if appIDStr == "" || depIDStr == "" {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	appID, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	depID, err := strconv.Atoi(depIDStr)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	direction := 1
+	if directionStr == "up" {
+		direction = -1
+	}
+	err = h.Repository.MoveDepartmentInApplication(uint(appID), uint(depID), direction)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", appID))
+		return
+	}
+	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", appID))
+}
+
+func (h *Handler) UpdateRoleFromForm(ctx *gin.Context) {
+	appIDStr := ctx.PostForm("department_application_id")
+	depIDStr := ctx.PostForm("department_id")
+	role := ctx.PostForm("role")
+	if appIDStr == "" || depIDStr == "" || role == "" {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	appID, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	depID, err := strconv.Atoi(depIDStr)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	err = h.Repository.UpdateRole(uint(appID), uint(depID), role)
+	if err != nil {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", appID))
+		return
+	}
+	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", appID))
 }

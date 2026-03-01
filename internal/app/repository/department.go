@@ -109,10 +109,28 @@ func (r *Repository) AddPhoto(ctx *gin.Context, departmentID int, file *multipar
 	if err != nil {
 		return ds.Department{}, err
 	}
-	department.Photo = fileName
 	if err := r.db.Model(&ds.Department{}).Where("department_id = ?", departmentID).Update("photo_url", fileName).Error; err != nil {
 		return ds.Department{}, err
 	}
 	department.Photo = fileName
+	return *department, nil
+}
+
+func (r *Repository) AddVideo(ctx *gin.Context, departmentID int, file *multipart.FileHeader) (ds.Department, error) {
+	department, err := r.GetDepartment(departmentID)
+	if err != nil {
+		return ds.Department{}, err
+	}
+	if department.Video != "" {
+		_ = minioClient.DeleteObject(ctx, r.mc, minioClient.GetImgBucket(), department.Video)
+	}
+	fileName, err := minioClient.UploadVideo(ctx, r.mc, minioClient.GetImgBucket(), file, department.DepartmentID)
+	if err != nil {
+		return ds.Department{}, err
+	}
+	if err := r.db.Model(&ds.Department{}).Where("department_id = ?", departmentID).Update("video", fileName).Error; err != nil {
+		return ds.Department{}, err
+	}
+	department.Video = fileName
 	return *department, nil
 }

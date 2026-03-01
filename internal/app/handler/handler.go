@@ -93,7 +93,7 @@ func (h *Handler) Index(ctx *gin.Context) {
 		departments = []ds.Department{}
 	}
 
-	creatorID := uint(h.Repository.GetUserID())
+	creatorID := uint(h.Repository.GetCreatorID())
 	count := int(h.Repository.GetDepartmentApplicationCount(creatorID))
 	appID := h.Repository.GetActiveDepartmentApplicationID(creatorID)
 
@@ -110,13 +110,14 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.GET("/", h.Index)
 	router.GET("/department/:id", h.DepartmentPage)
 	router.GET("/department_application/:id", h.DepartmentApplicationPage)
+	router.POST("/department_application/add", h.AddToDepartmentApplicationFromForm)
+	router.POST("/department_application/delete", h.DeleteDepartmentApplicationFromForm)
+	router.POST("/department_application/move", h.MoveDepartmentInApplicationFromForm)
+	router.POST("/department_application/update_role", h.UpdateRoleFromForm)
 	router.GET("/api/departments", h.GetDepartments)
 	router.GET("/api/department/:id", h.GetDepartment)
 	router.POST("/api/department/create-department", h.CreateDepartment)
-	router.PUT("/api/department/:id/edit-department", h.EditDepartment)
-	router.DELETE("/api/department/:id/delete-department", h.DeleteDepartment)
 	router.POST("/api/department/:id/add-to-department_application", h.AddToDepartmentApplication)
-	router.POST("/api/department/:id/add-photo", h.AddPhoto)
 
 	router.GET("/api/department_application/department_application-cart", h.GetDepartmentApplicationCart)
 	router.GET("/api/department_application/all-department_applications", h.GetAllDepartmentApplications)
@@ -130,8 +131,6 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.PUT("/api/dep_app_dep/:department_id/:department_application_id", h.EditDepartmentFromDepartmentApplication)
 
 	router.POST("/api/users/signup", h.CreateUser)
-	router.GET("/api/users/info", h.GetInfo)
-	router.PUT("/api/users/info", h.EditInfo)
 	router.POST("/api/users/signin", h.SignIn)
 	router.POST("/api/users/signout", h.SignOut)
 }

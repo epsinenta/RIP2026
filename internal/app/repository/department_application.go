@@ -289,6 +289,18 @@ func (r *Repository) FormDepartmentApplication(id int, status string) (ds.Depart
 				return ds.DepartmentApplication{}, errors.New("укажите роль для каждого отдела")
 			}
 		}
+		for _, item := range items {
+			var dep ds.Department
+			if err := r.db.First(&dep, item.DepartmentID).Error; err != nil {
+				return ds.DepartmentApplication{}, err
+			}
+			salary := roleToBaseSalary(item.Role) + float64(dep.EmployeeCount)*5000
+			if err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
+				Where("department_application_id = ? AND department_id = ?", app.DepartmentApplicationID, item.DepartmentID).
+				Update("salary", salary).Error; err != nil {
+				return ds.DepartmentApplication{}, err
+			}
+		}
 	}
 	formingDate := time.Now()
 	err = r.db.Model(&app).Updates(map[string]interface{}{
