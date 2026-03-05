@@ -140,26 +140,61 @@ func (h *Handler) AddToDepartmentApplication(ctx *gin.Context) {
 	ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
 }
 
-func (h *Handler) AddToDepartmentApplicationFromForm(ctx *gin.Context) {
-	departmentIDStr := ctx.PostForm("department_id")
+func (h *Handler) AddToDepartmentApplicationForm(ctx *gin.Context) {
+	departmentIDStr := ctx.Param("id")
 	if departmentIDStr == "" {
+		departmentIDStr = ctx.PostForm("department_id")
+	}
+	if departmentIDStr == "" {
+		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
+			h.errorHandler(ctx, http.StatusBadRequest, fmt.Errorf("department_id is required"))
+			return
+		}
 		ctx.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 	departmentID, err := strconv.Atoi(departmentIDStr)
 	if err != nil {
+		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
 		ctx.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 	creatorID := uint(h.Repository.GetCreatorID())
-	_, _, err = h.Repository.GetDepartmentApplicationDraft(creatorID)
+	app, created, err := h.Repository.GetDepartmentApplicationDraft(creatorID)
 	if err != nil {
+		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+			return
+		}
 		ctx.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 	err = h.Repository.AddDepartment(uint(departmentID), creatorID)
 	if err != nil {
+		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
+			if errors.Is(err, repository.ErrNotFound) {
+				h.errorHandler(ctx, http.StatusNotFound, err)
+			} else if errors.Is(err, repository.ErrAlreadyExists) {
+				h.errorHandler(ctx, http.StatusConflict, err)
+			} else {
+				h.errorHandler(ctx, http.StatusInternalServerError, err)
+			}
+			return
+		}
 		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+	if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
+		creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+		status := http.StatusOK
+		if created {
+			ctx.Header("Location", fmt.Sprintf("/api/department_application/%d", app.DepartmentApplicationID))
+			status = http.StatusCreated
+		}
+		ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
 		return
 	}
 	redirectTo := ctx.GetHeader("Referer")

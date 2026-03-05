@@ -2,11 +2,14 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
+	"web_backend/internal/app/ds"
 	"web_backend/internal/app/repository"
 	"web_backend/internal/app/serializer"
 )
@@ -49,17 +52,80 @@ func (h *Handler) EditDepartmentFromDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	var j serializer.DepartmentApplicationDepartmentJSON
-	if err := ctx.BindJSON(&j); err != nil {
-		h.errorHandler(ctx, http.StatusBadRequest, err)
+	contentType := ctx.GetHeader("Content-Type")
+	if strings.HasPrefix(contentType, "application/json") {
+		if err := ctx.BindJSON(&j); err != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
+	} else {
+		if err := ctx.ShouldBind(&j); err != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
+		j.DepartmentID = uint(departmentID)
+		j.DepartmentApplicationID = uint(departmentApplicationID)
+	}
+
+	isFormRequest := !strings.HasPrefix(contentType, "application/json")
+
+	if j.Direction == "up" || j.Direction == "down" {
+		direction := 1
+		if j.Direction == "up" {
+			direction = -1
+		}
+		err = h.Repository.MoveDepartmentInApplication(uint(departmentApplicationID), uint(departmentID), direction)
+		if err != nil {
+			if isFormRequest {
+				ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", departmentApplicationID))
+				return
+			}
+			if errors.Is(err, repository.ErrNotFound) {
+				h.errorHandler(ctx, http.StatusNotFound, err)
+			} else {
+				h.errorHandler(ctx, http.StatusInternalServerError, err)
+			}
+			return
+		}
+		if isFormRequest {
+			ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", departmentApplicationID))
+			return
+		}
+		items, err := h.Repository.GetDepartmentApplicationItems(departmentApplicationID)
+		if err != nil {
+			h.errorHandler(ctx, http.StatusInternalServerError, err)
+			return
+		}
+		var item *ds.DepartmentApplicationDepartment
+		for i := range items {
+			if items[i].DepartmentID == uint(departmentID) {
+				item = &items[i]
+				break
+			}
+		}
+		if item != nil {
+			ctx.JSON(http.StatusOK, serializer.DepartmentApplicationDepartmentToJSON(*item))
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{"message": "moved"})
+		}
 		return
 	}
+
 	item, err := h.Repository.EditDepartmentFromDepartmentApplication(departmentApplicationID, departmentID, j)
 	if err != nil {
+		if isFormRequest {
+			ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", departmentApplicationID))
+			return
+		}
 		if errors.Is(err, repository.ErrNotFound) {
 			h.errorHandler(ctx, http.StatusNotFound, err)
 		} else {
 			h.errorHandler(ctx, http.StatusInternalServerError, err)
 		}
+		return
+	}
+	if isFormRequest {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/department_application/%d", departmentApplicationID))
 		return
 	}
 	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationDepartmentToJSON(item))

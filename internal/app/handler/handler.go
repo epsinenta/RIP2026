@@ -110,14 +110,11 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.GET("/", h.Index)
 	router.GET("/department/:id", h.DepartmentPage)
 	router.GET("/department_application/:id", h.DepartmentApplicationPage)
-	router.POST("/department_application/add", h.AddToDepartmentApplicationFromForm)
-	router.POST("/department_application/delete", h.DeleteDepartmentApplicationFromForm)
-	router.POST("/department_application/move", h.MoveDepartmentInApplicationFromForm)
-	router.POST("/department_application/update_role", h.UpdateRoleFromForm)
+
 	router.GET("/api/departments", h.GetDepartments)
 	router.GET("/api/department/:id", h.GetDepartment)
 	router.POST("/api/department/create-department", h.CreateDepartment)
-	router.POST("/api/department/:id/add-to-department_application", h.AddToDepartmentApplication)
+	router.POST("/api/department/:id/add-to-department_application", h.AddToDepartmentApplicationForm)
 
 	router.GET("/api/department_application/department_application-cart", h.GetDepartmentApplicationCart)
 	router.GET("/api/department_application/all-department_applications", h.GetAllDepartmentApplications)
@@ -125,7 +122,7 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.PUT("/api/department_application/:id/edit-department_application", h.EditDepartmentApplication)
 	router.PUT("/api/department_application/:id/form-department_application", h.FormDepartmentApplication)
 	router.PUT("/api/department_application/:id/finish-department_application", h.FinishDepartmentApplication)
-	router.DELETE("/api/department_application/:id/delete-department_application", h.DeleteDepartmentApplication)
+	router.DELETE("/api/department_application/:id/delete-department_application", h.DeleteDepartmentApplicationForm)
 
 	router.DELETE("/api/dep_app_dep/:department_id/:department_application_id", h.DeleteDepartmentFromDepartmentApplication)
 	router.PUT("/api/dep_app_dep/:department_id/:department_application_id", h.EditDepartmentFromDepartmentApplication)
