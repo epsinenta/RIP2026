@@ -281,7 +281,9 @@ func (r *Repository) FormDepartmentApplication(id int, status string) (ds.Depart
 	}
 	if status != "deleted" {
 		if app.Title == nil || *app.Title == "" {
-			return ds.DepartmentApplication{}, errors.New("укажите название заявки")
+			defaultTitle := fmt.Sprintf("Заявка №%d", id)
+			app.Title = &defaultTitle
+			r.db.Model(&app).Update("title", defaultTitle)
 		}
 		items, _ := r.GetDepartmentApplicationItems(int(app.DepartmentApplicationID))
 		for _, item := range items {

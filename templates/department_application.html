@@ -44,11 +44,13 @@
                     <td class="app-table__col-employees">{{ $item.Department.EmployeeCount }}</td>
                     <td class="app-table__col-salary">{{ printf "%.0f" (num $item.Salary) }} ₽</td>
                     <td class="app-table__col-role">
-                        <select class="role-select" data-url="/api/dep_app_dep/{{ $item.DepartmentID }}/{{ $.department_application_id }}">
+                        <div class="role-form">
+                            <select class="role-select" data-url="/api/dep_app_dep/{{ $item.DepartmentID }}/{{ $.department_application_id }}">
                             <option value="Головной" {{ if eq (str $item.Role) "Головной" }}selected{{ end }}>Головной</option>
                             <option value="Руководящий" {{ if eq (str $item.Role) "Руководящий" }}selected{{ end }}>Руководящий</option>
                             <option value="Подчинённый" {{ if eq (str $item.Role) "Подчинённый" }}selected{{ end }}>Подчинённый</option>
-                        </select>
+                            </select>
+                        </div>
                     </td>
                     <td class="app-table__col-main">
                         {{ if isMain $item.MainDepartmentID $item.DepartmentID }}
