@@ -41,7 +41,17 @@ func (r *Repository) EditDepartmentFromDepartmentApplication(departmentApplicati
 		return ds.DepartmentApplicationDepartment{}, err
 	}
 	updates := serializer.DepartmentApplicationDepartmentFromJSON(j)
-	err = r.db.Model(&item).Updates(updates).Error
+	updatesMap := map[string]interface{}{
+		"sort_order": updates.SortOrder,
+		"role":       updates.Role,
+	}
+	if updates.Amount != nil {
+		updatesMap["amount"] = updates.Amount
+	}
+	if updates.Salary != nil {
+		updatesMap["salary"] = updates.Salary
+	}
+	err = r.db.Model(&item).Updates(updatesMap).Error
 	if err != nil {
 		return ds.DepartmentApplicationDepartment{}, err
 	}
