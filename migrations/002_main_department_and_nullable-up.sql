@@ -13,6 +13,3 @@ WHERE main_department_id IS NULL;
 
 ALTER TABLE department_application_departments
     DROP COLUMN IF EXISTS is_main;
-
-ALTER TABLE department_application_departments
-    ALTER COLUMN amount DROP NOT NULL;

@@ -132,16 +132,17 @@ func (h *Handler) AddToDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
 	status := http.StatusOK
 	if created {
 		ctx.Header("Location", fmt.Sprintf("/api/department_application/%d", app.DepartmentApplicationID))
 		status = http.StatusCreated
 	}
-	ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
 func (h *Handler) AddToDepartmentApplicationForm(ctx *gin.Context) {
-	departmentIDStr := ctx.Param("id")
+	departmentIDStr := ctx.Param("department_id")
 	if departmentIDStr == "" {
 		departmentIDStr = ctx.PostForm("department_id")
 	}
@@ -189,12 +190,13 @@ func (h *Handler) AddToDepartmentApplicationForm(ctx *gin.Context) {
 	}
 	if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
 		creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
+		incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
 		status := http.StatusOK
 		if created {
 			ctx.Header("Location", fmt.Sprintf("/api/department_application/%d", app.DepartmentApplicationID))
 			status = http.StatusCreated
 		}
-		ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+		ctx.JSON(status, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 		return
 	}
 	redirectTo := ctx.GetHeader("Referer")

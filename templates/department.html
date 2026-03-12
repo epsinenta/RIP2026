@@ -22,7 +22,7 @@
                     <span class="vibes-manager__label">Руководитель</span>
                     <span class="vibes-manager__name">{{ .department.Head }}</span>
                 </div>
-                <form method="POST" action="/api/department/{{ .department.DepartmentID }}/add-to-department_application" style="margin-top: 16px;">
+                <form method="POST" action="/api/dep_app_dep/add/{{ .department.DepartmentID }}" style="margin-top: 16px;">
                     <button type="submit" class="search-btn">Добавить в заявку</button>
                 </form>
             </div>

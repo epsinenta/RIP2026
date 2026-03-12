@@ -114,7 +114,6 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.GET("/api/departments", h.GetDepartments)
 	router.GET("/api/department/:id", h.GetDepartment)
 	router.POST("/api/department/create-department", h.CreateDepartment)
-	router.POST("/api/department/:id/add-to-department_application", h.AddToDepartmentApplicationForm)
 
 	router.GET("/api/department_application/department_application-cart", h.GetDepartmentApplicationCart)
 	router.GET("/api/department_application/all-department_applications", h.GetAllDepartmentApplications)
@@ -124,6 +123,7 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.PUT("/api/department_application/:id/finish-department_application", h.FinishDepartmentApplication)
 	router.DELETE("/api/department_application/:id/delete-department_application", h.DeleteDepartmentApplicationForm)
 
+	router.POST("/api/dep_app_dep/add/:department_id", h.AddToDepartmentApplicationForm)
 	router.DELETE("/api/dep_app_dep/:department_id/:department_application_id", h.DeleteDepartmentFromDepartmentApplication)
 	router.PUT("/api/dep_app_dep/:department_id/:department_application_id", h.EditDepartmentFromDepartmentApplication)
 

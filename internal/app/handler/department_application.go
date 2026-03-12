@@ -21,6 +21,7 @@ func (h *Handler) GetDepartmentApplicationCart(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"status":                    "no_draft",
 			"departments_count":         count,
+			"incomplete_items_count":    0,
 		})
 		return
 	}
@@ -30,17 +31,20 @@ func (h *Handler) GetDepartmentApplicationCart(ctx *gin.Context) {
 			h.errorHandler(ctx, http.StatusUnauthorized, err)
 		} else if errors.Is(err, repository.ErrNoDraft) {
 			ctx.JSON(http.StatusOK, gin.H{
-				"status":            "no_draft",
-				"departments_count": 0,
+				"status":                 "no_draft",
+				"departments_count":      0,
+				"incomplete_items_count": 0,
 			})
 		} else {
 			h.errorHandler(ctx, http.StatusInternalServerError, err)
 		}
 		return
 	}
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
 	ctx.JSON(http.StatusOK, gin.H{
-		"id":                app.DepartmentApplicationID,
-		"departments_count": h.Repository.GetDepartmentApplicationCount(creatorID),
+		"id":                    app.DepartmentApplicationID,
+		"departments_count":     h.Repository.GetDepartmentApplicationCount(creatorID),
+		"incomplete_items_count": incompleteCount,
 	})
 }
 
@@ -73,7 +77,8 @@ func (h *Handler) GetAllDepartmentApplications(ctx *gin.Context) {
 	resp := make([]serializer.DepartmentApplicationJSON, 0, len(apps))
 	for _, app := range apps {
 		creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-		resp = append(resp, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+		incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+		resp = append(resp, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 	}
 	ctx.JSON(http.StatusOK, resp)
 }
@@ -85,7 +90,7 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-	deps, app, err := h.Repository.GetDepartmentApplicationWithDepartments(id)
+	app, err := h.Repository.GetSingleDepartmentApplication(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			h.errorHandler(ctx, http.StatusNotFound, err)
@@ -96,14 +101,20 @@ func (h *Handler) GetDepartmentApplication(ctx *gin.Context) {
 		}
 		return
 	}
+	items, err := h.Repository.GetDepartmentApplicationItems(id)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-	depResp := make([]serializer.DepartmentJSON, 0, len(deps))
-	for _, d := range deps {
-		depResp = append(depResp, serializer.DepartmentToJSON(d))
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+	itemsResp := make([]serializer.DepartmentApplicationDepartmentJSON, 0, len(items))
+	for _, item := range items {
+		itemsResp = append(itemsResp, serializer.DepartmentApplicationDepartmentToJSON(h.Repository.EnsureItemSalary(&item)))
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"department_application": serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin),
-		"departments":             depResp,
+		"department_application": serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount),
+		"items":                  itemsResp,
 	})
 }
 
@@ -129,7 +140,8 @@ func (h *Handler) EditDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
 func (h *Handler) FormDepartmentApplication(ctx *gin.Context) {
@@ -151,7 +163,8 @@ func (h *Handler) FormDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
 func (h *Handler) FinishDepartmentApplication(ctx *gin.Context) {
@@ -178,7 +191,8 @@ func (h *Handler) FinishDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
 func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {

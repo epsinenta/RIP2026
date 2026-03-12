@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS department_applications (
 CREATE TABLE IF NOT EXISTS department_application_departments (
     department_application_id INTEGER NOT NULL REFERENCES department_applications(department_application_id),
     department_id INTEGER NOT NULL REFERENCES departments(department_id),
-    amount INTEGER NOT NULL DEFAULT 1,
     is_main BOOLEAN DEFAULT FALSE,
     role VARCHAR(100),
     salary NUMERIC(12,2),

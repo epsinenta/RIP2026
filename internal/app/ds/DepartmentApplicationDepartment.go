@@ -3,7 +3,6 @@ package ds
 type DepartmentApplicationDepartment struct {
 	DepartmentApplicationID uint   `gorm:"primaryKey;column:department_application_id"`
 	DepartmentID            uint   `gorm:"primaryKey;column:department_id"`
-	Amount                  *int   `gorm:"default:1"`
 	MainDepartmentID        *uint  `gorm:"column:main_department_id"`
 	SortOrder               int    `gorm:"column:sort_order;default:0"`
 	Role                    string `gorm:"type:varchar(100)"`

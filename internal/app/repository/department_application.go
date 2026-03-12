@@ -149,14 +149,12 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			Where("department_application_id = ?", app.DepartmentApplicationID).
 			Select("COALESCE(MAX(sort_order), -1)").Scan(&maxOrder)
 
-		amount := 1
 		baseSalary := roleToBaseSalary("Головной")
 		salary := baseSalary + float64(dep.EmployeeCount)*5000
 
 		item := ds.DepartmentApplicationDepartment{
 			DepartmentApplicationID: app.DepartmentApplicationID,
 			DepartmentID:            departmentID,
-			Amount:                  &amount,
 			MainDepartmentID:        &departmentID,
 			SortOrder:               maxOrder + 1,
 			Role:                    "Головной",
@@ -166,6 +164,9 @@ func (r *Repository) AddDepartment(departmentID uint, creatorID uint) error {
 			return err
 		}
 		if err := r.RecalculateMainDepartments(app.DepartmentApplicationID); err != nil {
+			return err
+		}
+		if err := r.UpdateIncompleteItemsCount(app.DepartmentApplicationID); err != nil {
 			return err
 		}
 	}
@@ -303,6 +304,9 @@ func (r *Repository) FormDepartmentApplication(id int, status string) (ds.Depart
 				return ds.DepartmentApplication{}, err
 			}
 		}
+		if err := r.UpdateIncompleteItemsCount(app.DepartmentApplicationID); err != nil {
+			return ds.DepartmentApplication{}, err
+		}
 	}
 	formingDate := time.Now()
 	err = r.db.Model(&app).Updates(map[string]interface{}{
@@ -323,6 +327,38 @@ func (r *Repository) GetDepartmentApplicationItems(appID int) ([]ds.DepartmentAp
 		Preload("Department").Preload("MainDepartment").
 		Order("sort_order ASC, department_id ASC").Find(&items).Error
 	return items, err
+}
+
+// EnsureItemSalary возвращает копию item с рассчитанной зарплатой, если она не задана.
+func (r *Repository) EnsureItemSalary(item *ds.DepartmentApplicationDepartment) ds.DepartmentApplicationDepartment {
+	result := *item
+	if result.Salary != nil {
+		return result
+	}
+	salary := roleToBaseSalary(result.Role) + float64(item.Department.EmployeeCount)*5000
+	result.Salary = &salary
+	return result
+}
+
+// GetIncompleteItemsCount возвращает количество MM в заявке, у которых не заполнены обязательные поля (роль или зарплата).
+func (r *Repository) GetIncompleteItemsCount(appID uint) (int, error) {
+	var count int64
+	err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
+		Where("department_application_id = ?", appID).
+		Where("COALESCE(TRIM(role), '') = '' OR salary IS NULL").
+		Count(&count).Error
+	return int(count), err
+}
+
+// UpdateIncompleteItemsCount пересчитывает и обновляет incomplete_items_count в заявке.
+func (r *Repository) UpdateIncompleteItemsCount(appID uint) error {
+	count, err := r.GetIncompleteItemsCount(appID)
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&ds.DepartmentApplication{}).
+		Where("department_application_id = ?", appID).
+		Update("incomplete_items_count", count).Error
 }
 
 func (r *Repository) EditDepartmentApplication(id int, j serializer.DepartmentApplicationJSON) (ds.DepartmentApplication, error) {
@@ -399,6 +435,9 @@ func (r *Repository) FinishDepartmentApplication(id int, status string) (ds.Depa
 			}
 			r.db.Model(&item).Update("salary", salary)
 		}
+		if err := r.UpdateIncompleteItemsCount(app.DepartmentApplicationID); err != nil {
+			return ds.DepartmentApplication{}, err
+		}
 	}
 	return app, nil
 }
@@ -442,7 +481,10 @@ func (r *Repository) UpdateRole(appID, departmentID uint, role string) error {
 		Updates(map[string]interface{}{"role": role, "salary": salary}).Error; err != nil {
 		return err
 	}
-	return r.RecalculateMainDepartments(appID)
+	if err := r.RecalculateMainDepartments(appID); err != nil {
+		return err
+	}
+	return r.UpdateIncompleteItemsCount(appID)
 }
 
 func (r *Repository) MoveDepartmentInApplication(appID, departmentID uint, direction int) error {

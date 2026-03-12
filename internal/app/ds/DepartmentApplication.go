@@ -14,6 +14,7 @@ type DepartmentApplication struct {
 	FinishDate              sql.NullTime `gorm:"column:finish_date"`
 	ModeratorID             *uint        `gorm:"column:moderator_id"`
 	Title                   *string      `gorm:"type:varchar(255)"`
+	IncompleteItemsCount    int          `gorm:"column:incomplete_items_count;default:0"`
 
 	Creator   Users  `gorm:"foreignKey:CreatorID"`
 	Moderator *Users `gorm:"foreignKey:ModeratorID"`

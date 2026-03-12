@@ -7,17 +7,18 @@ import (
 )
 
 type DepartmentApplicationJSON struct {
-	ID             uint      `json:"department_application_id"`
-	Status         string     `json:"status"`
-	CreatedAt      time.Time  `json:"created_at"`
-	CreatorLogin   string     `json:"creator_login"`
-	ModeratorLogin *string    `json:"moderator_login"`
-	FormingDate    *time.Time `json:"forming_date"`
-	FinishDate     *time.Time `json:"finish_date"`
-	Title          *string   `json:"title"`
+	ID                    uint      `json:"department_application_id"`
+	Status                string    `json:"status"`
+	CreatedAt             time.Time `json:"created_at"`
+	CreatorLogin          string    `json:"creator_login"`
+	ModeratorLogin        *string   `json:"moderator_login"`
+	FormingDate           *time.Time `json:"forming_date"`
+	FinishDate            *time.Time `json:"finish_date"`
+	Title                 *string   `json:"title"`
+	IncompleteItemsCount  int       `json:"incomplete_items_count"`
 }
 
-func DepartmentApplicationToJSON(app ds.DepartmentApplication, creatorLogin, moderatorLogin string) DepartmentApplicationJSON {
+func DepartmentApplicationToJSON(app ds.DepartmentApplication, creatorLogin, moderatorLogin string, incompleteItemsCount int) DepartmentApplicationJSON {
 	var mLogin *string
 	if moderatorLogin != "" {
 		mLogin = &moderatorLogin
@@ -30,14 +31,15 @@ func DepartmentApplicationToJSON(app ds.DepartmentApplication, creatorLogin, mod
 		finishDate = &app.FinishDate.Time
 	}
 	return DepartmentApplicationJSON{
-		ID:             app.DepartmentApplicationID,
-		Status:         app.Status,
-		CreatedAt:      app.CreatedAt,
-		CreatorLogin:   creatorLogin,
-		ModeratorLogin: mLogin,
-		FormingDate:    formingDate,
-		FinishDate:     finishDate,
-		Title:          app.Title,
+		ID:                   app.DepartmentApplicationID,
+		Status:               app.Status,
+		CreatedAt:            app.CreatedAt,
+		CreatorLogin:         creatorLogin,
+		ModeratorLogin:       mLogin,
+		FormingDate:          formingDate,
+		FinishDate:           finishDate,
+		Title:                app.Title,
+		IncompleteItemsCount: incompleteItemsCount,
 	}
 }
 

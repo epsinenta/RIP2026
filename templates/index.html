@@ -38,7 +38,7 @@
                     <p class="card__employees">Сотрудников: {{ .EmployeeCount }}</p>
                     <p class="card__description">{{ .ShortDescription }}</p>
                 </a>
-                <form method="POST" action="/api/department/{{ .DepartmentID }}/add-to-department_application" class="card-add-form">
+                <form method="POST" action="/api/dep_app_dep/add/{{ .DepartmentID }}" class="card-add-form">
                     <button type="submit" class="card-add-btn">Добавить в заявку</button>
                 </form>
             </div>

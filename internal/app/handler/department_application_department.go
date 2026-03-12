@@ -37,7 +37,8 @@ func (h *Handler) DeleteDepartmentFromDepartmentApplication(ctx *gin.Context) {
 		return
 	}
 	creatorLogin, moderatorLogin, _ := h.Repository.GetModeratorAndCreatorLogin(app)
-	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin))
+	incompleteCount, _ := h.Repository.GetIncompleteItemsCount(app.DepartmentApplicationID)
+	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
 func (h *Handler) EditDepartmentFromDepartmentApplication(ctx *gin.Context) {

@@ -27,6 +27,9 @@ func (r *Repository) DeleteDepartmentFromDepartmentApplication(departmentApplica
 	if err := r.RecalculateMainDepartments(app.DepartmentApplicationID); err != nil {
 		return ds.DepartmentApplication{}, err
 	}
+	if err := r.UpdateIncompleteItemsCount(app.DepartmentApplicationID); err != nil {
+		return ds.DepartmentApplication{}, err
+	}
 	return app, nil
 }
 
@@ -45,9 +48,6 @@ func (r *Repository) EditDepartmentFromDepartmentApplication(departmentApplicati
 		"sort_order": updates.SortOrder,
 		"role":       updates.Role,
 	}
-	if updates.Amount != nil {
-		updatesMap["amount"] = updates.Amount
-	}
 	if updates.Salary != nil {
 		updatesMap["salary"] = updates.Salary
 	}
@@ -63,6 +63,9 @@ func (r *Repository) EditDepartmentFromDepartmentApplication(departmentApplicati
 		}
 	}
 	if err := r.RecalculateMainDepartments(uint(departmentApplicationID)); err != nil {
+		return ds.DepartmentApplicationDepartment{}, err
+	}
+	if err := r.UpdateIncompleteItemsCount(uint(departmentApplicationID)); err != nil {
 		return ds.DepartmentApplicationDepartment{}, err
 	}
 	r.db.Where("department_id = ? AND department_application_id = ?", departmentID, departmentApplicationID).
