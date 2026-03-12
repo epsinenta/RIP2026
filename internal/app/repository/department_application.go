@@ -224,9 +224,12 @@ func (r *Repository) GetModeratorAndCreatorLogin(app ds.DepartmentApplication) (
 	return creator.Login, moderatorLogin, nil
 }
 
-func (r *Repository) GetAllDepartmentApplications(from, to time.Time, status string) ([]ds.DepartmentApplication, error) {
+func (r *Repository) GetAllDepartmentApplications(from, to time.Time, status string, creatorID uint) ([]ds.DepartmentApplication, error) {
 	var apps []ds.DepartmentApplication
 	sub := r.db.Where("status != ? AND status != ?", "deleted", "draft")
+	if creatorID > 0 {
+		sub = sub.Where("creator_id = ?", creatorID)
+	}
 	if !from.IsZero() {
 		sub = sub.Where("forming_date > ?", from)
 	}
@@ -382,16 +385,9 @@ func (r *Repository) EditDepartmentApplication(id int, j serializer.DepartmentAp
 	return app, nil
 }
 
-func (r *Repository) FinishDepartmentApplication(id int, status string) (ds.DepartmentApplication, error) {
+func (r *Repository) FinishDepartmentApplication(id int, status string, moderatorID uint) (ds.DepartmentApplication, error) {
 	if status != "completed" && status != "rejected" {
 		return ds.DepartmentApplication{}, errors.New("неверный статус")
-	}
-	user, err := r.GetUserByID(r.GetUserID())
-	if err != nil {
-		return ds.DepartmentApplication{}, err
-	}
-	if !user.IsModerator {
-		return ds.DepartmentApplication{}, fmt.Errorf("%w: вы не модератор", ErrNotAllowed)
 	}
 	app, err := r.GetSingleDepartmentApplication(id)
 	if err != nil {
@@ -402,21 +398,16 @@ func (r *Repository) FinishDepartmentApplication(id int, status string) (ds.Depa
 	}
 	finishDate := time.Now()
 	err = r.db.Model(&app).Updates(map[string]interface{}{
-		"status":      status,
-		"finish_date": finishDate,
-		"moderator_id": user.UserID,
+		"status":       status,
+		"finish_date":  finishDate,
+		"moderator_id": moderatorID,
 	}).Error
 	if err != nil {
 		return ds.DepartmentApplication{}, err
 	}
 	app.Status = status
 	app.FinishDate = sql.NullTime{Time: finishDate, Valid: true}
-	if app.ModeratorID == nil {
-		uid := user.UserID
-		app.ModeratorID = &uid
-	} else {
-		*app.ModeratorID = user.UserID
-	}
+	app.ModeratorID = &moderatorID
 	if status == "completed" {
 		items, err := r.GetDepartmentApplicationItems(int(app.DepartmentApplicationID))
 		if err != nil {
