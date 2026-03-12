@@ -2,10 +2,8 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -216,46 +214,3 @@ func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Department application deleted"})
 }
 
-func (h *Handler) DeleteDepartmentApplicationForm(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	if idStr == "" {
-		idStr = ctx.PostForm("department_application_id")
-	}
-	if idStr == "" {
-		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
-			h.errorHandler(ctx, http.StatusBadRequest, fmt.Errorf("department_application_id is required"))
-			return
-		}
-		ctx.Redirect(http.StatusSeeOther, "/")
-		return
-	}
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
-			h.errorHandler(ctx, http.StatusBadRequest, err)
-			return
-		}
-		ctx.Redirect(http.StatusSeeOther, "/")
-		return
-	}
-	_, err = h.Repository.FormDepartmentApplication(id, "deleted")
-	if err != nil {
-		if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
-			if errors.Is(err, repository.ErrNotFound) {
-				h.errorHandler(ctx, http.StatusNotFound, err)
-			} else if errors.Is(err, repository.ErrNotAllowed) {
-				h.errorHandler(ctx, http.StatusForbidden, err)
-			} else {
-				h.errorHandler(ctx, http.StatusInternalServerError, err)
-			}
-			return
-		}
-		ctx.Redirect(http.StatusSeeOther, "/")
-		return
-	}
-	if ctx.GetHeader("Accept") != "" && strings.Contains(ctx.GetHeader("Accept"), "application/json") {
-		ctx.JSON(http.StatusOK, gin.H{"message": "Department application deleted"})
-		return
-	}
-	ctx.Redirect(http.StatusSeeOther, "/")
-}
