@@ -333,4 +333,3 @@ func (h *Handler) DeleteDepartmentApplication(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Department application deleted"})
 }
-

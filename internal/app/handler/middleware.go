@@ -17,9 +17,7 @@ const bearerPrefix = "Bearer"
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		allowedOrigins := []string{
-			"http://localhost:3000",
 			"tauri://localhost",
-			"http://tauri.localhost",
 			"http://localhost:8080",
 			"http://localhost:9000",
 			"http://*:9000",
