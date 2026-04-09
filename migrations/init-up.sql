@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS departments (
     head VARCHAR(255),
     reports_to VARCHAR(255),
     video VARCHAR(255),
-    short_description VARCHAR(500)
+    short_description VARCHAR(500),
+    short_description_en VARCHAR(500)
 );
 
 CREATE TABLE IF NOT EXISTS department_applications (
@@ -40,10 +41,10 @@ CREATE TABLE IF NOT EXISTS department_application_departments (
 
 INSERT INTO users (login, password, is_moderator) VALUES ('user1', 'pass1', false), ('moderator', 'modpass', true) ON CONFLICT (login) DO NOTHING;
 
-INSERT INTO departments (title, description, is_deleted, photo_url, employee_count, head, reports_to, video, short_description) VALUES
-('Отдел информационных технологий', 'Отдел информационных технологий является ключевым структурным подразделением компании.', false, 'it_department.jpg', 42, 'Иванов Алексей Петрович', 'Генеральный директор', 'it_department.mp4', 'Поддержка корпоративных систем и инфраструктуры'),
-('Бухгалтерия и финансовый контроль', 'Отдел бухгалтерии и финансового контроля обеспечивает ведение бухгалтерского и налогового учёта.', false, 'accounting.jpg', 18, 'Смирнова Елена Викторовна', 'Финансовый директор', 'accounting.mp4', 'Финансовый учёт и отчётность компании'),
-('Отдел кадров', 'Отдел кадров осуществляет полный цикл управления персоналом.', false, 'hr_department.jpg', 12, 'Козлова Мария Дмитриевна', 'Директор по персоналу', 'hr_department.mp4', 'Управление персоналом, подбор и обучение сотрудников'),
-('Юридический отдел', 'Юридический отдел обеспечивает правовую поддержку всех направлений деятельности компании.', false, 'legal.jpg', 9, 'Петров Дмитрий Сергеевич', 'Генеральный директор', 'legal.mp4', 'Правовая поддержка деятельности компании'),
-('Отдел закупок', 'Отдел закупок занимается обеспечением компании всеми необходимыми материальными ресурсами.', false, 'procurement.jpg', 15, 'Новиков Андрей Владимирович', 'Коммерческий директор', 'procurement.mp4', 'Обеспечение компании материальными ресурсами'),
-('Административно-хозяйственный отдел', 'Административно-хозяйственный отдел отвечает за эксплуатацию и содержание офисных помещений.', false, 'admin_office.jpg', 20, 'Фёдоров Игорь Николаевич', 'Заместитель генерального директора', 'admin_office.mp4', 'Эксплуатация офисов и внутренняя логистика');
+INSERT INTO departments (title, description, is_deleted, photo_url, employee_count, head, reports_to, video, short_description, short_description_en) VALUES
+('Отдел информационных технологий', 'Отдел информационных технологий является ключевым структурным подразделением компании.', false, 'it_department.jpg', 42, 'Иванов Алексей Петрович', 'Генеральный директор', 'it_department.mp4', 'Поддержка корпоративных систем и инфраструктуры', 'Corporate IT systems, infrastructure and internal software development.'),
+('Бухгалтерия и финансовый контроль', 'Отдел бухгалтерии и финансового контроля обеспечивает ведение бухгалтерского и налогового учёта.', false, 'accounting.jpg', 18, 'Смирнова Елена Викторовна', 'Финансовый директор', 'accounting.mp4', 'Финансовый учёт и отчётность компании', 'Accounting, tax compliance and financial reporting.'),
+('Отдел кадров', 'Отдел кадров осуществляет полный цикл управления персоналом.', false, 'hr_department.jpg', 12, 'Козлова Мария Дмитриевна', 'Директор по персоналу', 'hr_department.mp4', 'Управление персоналом, подбор и обучение сотрудников', 'Human resources, recruitment and staff development.'),
+('Юридический отдел', 'Юридический отдел обеспечивает правовую поддержку всех направлений деятельности компании.', false, 'legal.jpg', 9, 'Петров Дмитрий Сергеевич', 'Генеральный директор', 'legal.mp4', 'Правовая поддержка деятельности компании', 'Legal support for business operations and contracts.'),
+('Отдел закупок', 'Отдел закупок занимается обеспечением компании всеми необходимыми материальными ресурсами.', false, 'procurement.jpg', 15, 'Новиков Андрей Владимирович', 'Коммерческий директор', 'procurement.mp4', 'Обеспечение компании материальными ресурсами', 'Procurement and supply of materials for the company.'),
+('Административно-хозяйственный отдел', 'Административно-хозяйственный отдел отвечает за эксплуатацию и содержание офисных помещений.', false, 'admin_office.jpg', 20, 'Фёдоров Игорь Николаевич', 'Заместитель генерального директора', 'admin_office.mp4', 'Эксплуатация офисов и внутренняя логистика', 'Office facilities management and internal logistics.');

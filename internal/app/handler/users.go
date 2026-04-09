@@ -16,17 +16,6 @@ import (
 	"web_backend/internal/app/serializer"
 )
 
-// CreateUser godoc
-// @Summary Регистрация пользователя
-// @Description Регистрирует нового пользователя. Возвращает login и is_moderator (без id и пароля).
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user body serializer.SignUpRequest true "Логин и пароль"
-// @Success 201 {object} serializer.SignUpResponse "Пользователь создан"
-// @Failure 400 {object} map[string]string "Ошибка валидации или входных данных"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/signup [post]
 func (h *Handler) CreateUser(ctx *gin.Context) {
 	var j serializer.SignUpRequest
 	if err := ctx.BindJSON(&j); err != nil {
@@ -56,18 +45,6 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, serializer.SignUpResponseFromUser(user))
 }
 
-// SignIn godoc
-// @Summary Вход (получение токена)
-// @Description Принимает логин/пароль, возвращает jwt-токен в формате {"token":"..."}.
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param credentials body serializer.SignInRequest true "Логин и пароль"
-// @Success 200 {object} map[string]string "token"
-// @Failure 400 {object} map[string]string "Неверный запрос"
-// @Failure 404 {object} map[string]string "Пользователь не найден"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/signin [post]
 func (h *Handler) SignIn(ctx *gin.Context) {
 	var j serializer.SignInRequest
 	if err := ctx.BindJSON(&j); err != nil {
@@ -94,16 +71,6 @@ func (h *Handler) SignIn(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-// SignOut godoc
-// @Summary Выход (удаление токена)
-// @Description Удаляет токен текущего пользователя из blacklist. 204 No Content.
-// @Tags users
-// @Produce json
-// @Success 204 "Токен добавлен в blacklist"
-// @Failure 400 {object} map[string]string "Проблема с получением user_id"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка при удалении токена"
-// @Security ApiKeyAuth
-// @Router /users/signout [post]
 func (h *Handler) SignOut(ctx *gin.Context) {
 	tokenString := extractTokenFromHeader(ctx.Request)
 	if tokenString == "" {

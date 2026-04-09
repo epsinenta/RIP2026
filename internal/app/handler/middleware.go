@@ -14,28 +14,66 @@ import (
 
 const bearerPrefix = "Bearer"
 
+func corsAllowedOriginsFromEnv() []string {
+	raw := strings.TrimSpace(os.Getenv("CORS_ALLOWED_ORIGINS"))
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func isAllowedCORSOrigin(origin string, extra []string) bool {
+	if origin == "" {
+		return true
+	}
+	static := []string{
+		"http://localhost:3000",
+		"http://127.0.0.1:3000",
+		"http://localhost:8000",
+		"http://127.0.0.1:8000",
+		"http://localhost:8080",
+		"http://127.0.0.1:8080",
+		"tauri://localhost",
+		"http://tauri.localhost",
+		"https://tauri.localhost",
+	}
+	for _, o := range static {
+		if origin == o {
+			return true
+		}
+	}
+	for _, o := range extra {
+		if origin == o {
+			return true
+		}
+	}
+	if strings.HasPrefix(origin, "https://") && strings.HasSuffix(origin, ".github.io") {
+		return true
+	}
+	return false
+}
+
 func CORSMiddleware() gin.HandlerFunc {
+	extra := corsAllowedOriginsFromEnv()
 	return func(c *gin.Context) {
-		allowedOrigins := []string{
-			"tauri://localhost",
-			"http://localhost:8080",
-			"http://localhost:9000",
-			"http://*:9000",
-		}
-
 		origin := c.Request.Header.Get("Origin")
-		for _, allowed := range allowedOrigins {
-			if origin == allowed {
-				c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-				break
-			}
-		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Accept, Origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length, Authorization")
+
+		if origin != "" && isAllowedCORSOrigin(origin, extra) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)

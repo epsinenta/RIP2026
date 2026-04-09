@@ -1081,6 +1081,9 @@
                 "short_description": {
                     "type": "string"
                 },
+                "short_description_en": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },

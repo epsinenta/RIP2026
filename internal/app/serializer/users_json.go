@@ -2,20 +2,17 @@ package serializer
 
 import "web_backend/internal/app/ds"
 
-// SignInRequest — запрос на вход (клиент не передаёт id)
 type SignInRequest struct {
 	Login    string `json:"login" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-// SignUpRequest — запрос на регистрацию (клиент не передаёт id)
 type SignUpRequest struct {
 	Login       string `json:"login" binding:"required"`
 	Password    string `json:"password" binding:"required"`
 	IsModerator bool   `json:"is_moderator"`
 }
 
-// SignUpResponse — ответ после регистрации (без id и пароля)
 type SignUpResponse struct {
 	Login       string `json:"login"`
 	IsModerator bool   `json:"is_moderator"`
@@ -36,7 +33,6 @@ func SignUpRequestToUser(j SignUpRequest) ds.Users {
 	}
 }
 
-// UserJSON — для внутреннего использования (EditInfo и т.д.)
 type UserJSON struct {
 	ID          uint   `json:"id,omitempty"`
 	Login       string `json:"login"`

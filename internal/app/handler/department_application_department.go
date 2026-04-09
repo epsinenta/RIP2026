@@ -12,19 +12,6 @@ import (
 	"web_backend/internal/app/serializer"
 )
 
-// DeleteDepartmentFromDepartmentApplication godoc
-// @Summary Удалить отдел из заявки
-// @Description Удаляет связь отдела и заявки
-// @Tags department_application_departments
-// @Produce json
-// @Param department_id path int true "ID отдела"
-// @Param department_application_id path int true "ID заявки"
-// @Success 200 {object} serializer.DepartmentApplicationJSON "Обновленная заявка"
-// @Failure 400 {object} map[string]string "Неверные ID"
-// @Failure 404 {object} map[string]string "Не найдено"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Security ApiKeyAuth
-// @Router /dep_app_dep/{department_id}/{department_application_id} [delete]
 func (h *Handler) DeleteDepartmentFromDepartmentApplication(ctx *gin.Context) {
 	departmentID, err := strconv.Atoi(ctx.Param("department_id"))
 	if err != nil {
@@ -52,21 +39,6 @@ func (h *Handler) DeleteDepartmentFromDepartmentApplication(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, serializer.DepartmentApplicationToJSON(app, creatorLogin, moderatorLogin, incompleteCount))
 }
 
-// EditDepartmentFromDepartmentApplication godoc
-// @Summary Изменить данные отдела в заявке
-// @Description Обновляет параметры отдела в конкретной заявке
-// @Tags department_application_departments
-// @Accept json
-// @Produce json
-// @Param department_id path int true "ID отдела"
-// @Param department_application_id path int true "ID заявки"
-// @Param data body serializer.DepartmentApplicationDepartmentJSON true "Новые данные"
-// @Success 200 {object} serializer.DepartmentApplicationDepartmentJSON "Обновленные данные"
-// @Failure 400 {object} map[string]string "Неверные данные"
-// @Failure 404 {object} map[string]string "Не найдено"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Security ApiKeyAuth
-// @Router /dep_app_dep/{department_id}/{department_application_id} [put]
 func (h *Handler) EditDepartmentFromDepartmentApplication(ctx *gin.Context) {
 	departmentID, err := strconv.Atoi(ctx.Param("department_id"))
 	if err != nil {

@@ -332,7 +332,6 @@ func (r *Repository) GetDepartmentApplicationItems(appID int) ([]ds.DepartmentAp
 	return items, err
 }
 
-// EnsureItemSalary возвращает копию item с рассчитанной зарплатой, если она не задана.
 func (r *Repository) EnsureItemSalary(item *ds.DepartmentApplicationDepartment) ds.DepartmentApplicationDepartment {
 	result := *item
 	if result.Salary != nil {
@@ -343,7 +342,6 @@ func (r *Repository) EnsureItemSalary(item *ds.DepartmentApplicationDepartment) 
 	return result
 }
 
-// GetIncompleteItemsCount возвращает количество MM в заявке, у которых не заполнены обязательные поля (роль или зарплата).
 func (r *Repository) GetIncompleteItemsCount(appID uint) (int, error) {
 	var count int64
 	err := r.db.Model(&ds.DepartmentApplicationDepartment{}).
@@ -353,7 +351,6 @@ func (r *Repository) GetIncompleteItemsCount(appID uint) (int, error) {
 	return int(count), err
 }
 
-// UpdateIncompleteItemsCount пересчитывает и обновляет incomplete_items_count в заявке.
 func (r *Repository) UpdateIncompleteItemsCount(appID uint) error {
 	count, err := r.GetIncompleteItemsCount(appID)
 	if err != nil {

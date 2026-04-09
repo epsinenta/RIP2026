@@ -9,8 +9,9 @@ type Department struct {
 	EmployeeCount    int    `gorm:"not null;default:0"`
 	Head             string `gorm:"type:varchar(255)"`
 	ReportsTo        string `gorm:"type:varchar(255)"`
-	Video            string `gorm:"type:varchar(255)"`
-	ShortDescription string `gorm:"type:varchar(500)"`
+	Video               string `gorm:"type:varchar(255)"`
+	ShortDescription    string `gorm:"type:varchar(500)"`
+	ShortDescriptionEN  string `gorm:"column:short_description_en;type:varchar(500)"`
 }
 
 func (Department) TableName() string {
